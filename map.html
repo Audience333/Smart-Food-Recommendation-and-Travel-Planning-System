@@ -1,0 +1,407 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <title>成都美食智能推荐系统</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: 'Microsoft YaHei', 'PingFang SC', sans-serif; background: #f5f5f5; }
+        #container { width: 100%; height: 100vh; }
+
+        .control-panel {
+            position: absolute; top: 20px; left: 20px; z-index: 1000;
+            background: white; padding: 20px; border-radius: 8px;
+            box-shadow: 0 2px 12px rgba(0,0,0,0.15); min-width: 200px;
+        }
+        .control-panel h3 { margin-bottom: 15px; color: #333; font-size: 16px; }
+        .control-panel label {
+            display: flex; align-items: center; margin: 8px 0;
+            cursor: pointer; padding: 6px 0; color: #666; font-size: 14px;
+        }
+        .control-panel input[type="checkbox"] { margin-right: 8px; }
+        .control-panel hr { border: none; border-top: 1px solid #eee; margin: 12px 0; }
+
+        .stats-panel {
+            position: absolute; top: 20px; right: 20px; z-index: 1000;
+            background: white; padding: 20px; border-radius: 8px;
+            box-shadow: 0 2px 12px rgba(0,0,0,0.15); max-width: 280px; max-height: 70vh; overflow-y: auto;
+        }
+        .stats-panel h3 { margin-bottom: 15px; color: #333; font-size: 16px; }
+        .district-item {
+            padding: 10px; margin: 6px 0; background: #f8f9fa;
+            border-radius: 6px; cursor: pointer; border-left: 3px solid #667eea;
+        }
+        .district-item:hover { background: #e9ecef; }
+        .district-name { font-weight: bold; color: #333; font-size: 14px; }
+        .district-info { font-size: 12px; color: #666; margin-top: 4px; }
+
+        .info-window { padding: 12px; min-width: 280px; }
+        .info-window h4 { color: #333; margin-bottom: 10px; font-size: 15px; border-bottom: 2px solid #667eea; padding-bottom: 8px; }
+        .info-row { display: flex; margin: 6px 0; font-size: 13px; }
+        .info-label { color: #999; min-width: 60px; }
+        .info-value { color: #333; }
+        .rating-star { color: #f5a623; }
+        .reviews { margin-top: 10px; padding: 8px; background: #f8f9fa; border-radius: 4px; }
+        .review-title { font-size: 12px; color: #999; margin-bottom: 5px; }
+        .review-item { font-size: 12px; color: #666; margin: 4px 0; padding-left: 8px; border-left: 2px solid #667eea; }
+
+        .comment-form {
+            margin-top: 12px; padding-top: 12px; border-top: 1px solid #eee;
+        }
+        .comment-form h5 { color: #333; font-size: 13px; margin-bottom: 8px; }
+        .comment-form input, .comment-form textarea, .comment-form select {
+            width: 100%; padding: 6px 8px; margin-bottom: 6px; border: 1px solid #ddd;
+            border-radius: 4px; font-size: 12px;
+        }
+        .comment-form textarea { height: 50px; resize: vertical; }
+        .comment-form button {
+            background: #667eea; color: white; padding: 6px 12px; border: none;
+            border-radius: 4px; cursor: pointer; font-size: 12px;
+        }
+        .comment-form button:hover { background: #5568d3; }
+
+        .search-box {
+            position: absolute; top: 20px; left: 50%; transform: translateX(-50%);
+            z-index: 1000; width: 350px;
+        }
+        .search-box input {
+            width: 100%; padding: 10px 15px; border: 1px solid #ddd;
+            border-radius: 6px; font-size: 14px; outline: none;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        }
+        .search-box input:focus { border-color: #667eea; }
+
+        .legend {
+            position: absolute; bottom: 20px; left: 20px; z-index: 1000;
+            background: white; padding: 12px 16px; border-radius: 6px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        }
+        .legend-item { display: flex; align-items: center; margin: 4px 0; font-size: 13px; color: #666; }
+        .legend-dot { width: 10px; height: 10px; border-radius: 50%; margin-right: 8px; }
+
+        .user-comments { margin-top: 10px; padding: 8px; background: #fff; border-radius: 4px; border: 1px solid #eee; }
+        .user-comments h5 { font-size: 12px; color: #333; margin-bottom: 6px; }
+        .user-comment-item { font-size: 11px; color: #666; margin: 4px 0; padding: 4px; background: #f9f9f9; border-radius: 3px; }
+    </style>
+</head>
+<body>
+    <div id="container"></div>
+
+    <div class="search-box">
+        <input type="text" id="searchInput" placeholder="搜索景点或美食..." onkeyup="searchMarkers()">
+    </div>
+
+    <div class="control-panel">
+        <h3>图层控制</h3>
+        <label><input type="checkbox" id="showScenic" checked onchange="toggleLayer()"> 景点 (12)</label>
+        <label><input type="checkbox" id="showFood" checked onchange="toggleLayer()"> 美食 (200)</label>
+        <hr>
+        <label><input type="checkbox" id="showCluster" checked onchange="toggleCluster()"> 聚类显示</label>
+        <label><input type="checkbox" id="showHeatmap" onchange="toggleHeatmap()"> 热力图</label>
+    </div>
+
+    <div class="stats-panel">
+        <h3>商圈统计</h3>
+        <div id="districtStats"></div>
+    </div>
+
+    <div class="legend">
+        <div class="legend-item"><div class="legend-dot" style="background: #667eea;"></div>景点</div>
+        <div class="legend-item"><div class="legend-dot" style="background: #e74c3c;"></div>美食</div>
+        <div class="legend-item"><div class="legend-dot" style="background: #f5a623;"></div>高评分(4.7+)</div>
+    </div>
+
+    <script src="https://webapi.amap.com/maps?v=2.0&key=647bb3e7a596c479b998f3e20a5a486a"></script>
+    <script>
+        var map = new AMap.Map('container', {
+            zoom: 12,
+            center: [104.07, 30.67],
+            mapStyle: 'amap://styles/normal'
+        });
+
+        var scenicData = [{"lng":104.077774,"lat":30.655544,"name":"春熙路步行街","address":"春熙路街道","type":"特色商业街"},{"lng":104.083809,"lat":30.653358,"name":"成都太古里","address":"中纱帽街8号","type":"购物中心"},{"lng":104.053307,"lat":30.663869,"name":"宽窄巷子景区","address":"少城街道金河路口宽窄巷子","type":"旅游景点"},{"lng":104.049828,"lat":30.645994,"name":"锦里古街","address":"武侯祠大街231号附1号","type":"风景名胜"},{"lng":104.047992,"lat":30.646168,"name":"成都武侯祠博物馆","address":"武侯祠大街231号","type":"博物馆"},{"lng":104.028514,"lat":30.660153,"name":"成都杜甫草堂博物馆","address":"青华路37号","type":"博物馆"},{"lng":104.072527,"lat":30.675418,"name":"文殊院","address":"文殊院街66号","type":"寺庙道观"},{"lng":104.057641,"lat":30.65699,"name":"人民公园","address":"小南街8号","type":"国家级景点"},{"lng":104.122906,"lat":30.668697,"name":"东郊记忆","address":"跳蹬河街道建设南支路1号","type":"国家级景点"},{"lng":104.138176,"lat":30.740573,"name":"成都大熊猫繁育研究基地","address":"熊猫大道1375号","type":"国家级景点"},{"lng":104.063402,"lat":30.568744,"name":"环球中心","address":"天府大道北段1700号","type":"购物中心"},{"lng":104.012634,"lat":30.681709,"name":"金沙遗址博物馆","address":"金沙遗址路2号","type":"博物馆"}];
+
+        var foodData = [];
+        var districtStats = {};
+        var scenicMarkers = [];
+        var foodMarkers = [];
+        var cluster = null;
+        var heatmap = null;
+        var userComments = {};
+
+        // 加载美食数据
+        fetch('food.json')
+            .then(response => response.json())
+            .then(data => {
+                foodData = data.slice(0, 200).map(item => ({
+                    lng: parseFloat(item.location.split(',')[0]),
+                    lat: parseFloat(item.location.split(',')[1]),
+                    name: item.name,
+                    address: item.address || '',
+                    district: item.district || '',
+                    type: item.type ? item.type.split(';').pop() : '美食',
+                    cost: item.cost || 0,
+                    rating: item.rating || 0,
+                    meituan_rating: item.meituan_rating || 0,
+                    meituan_comments: item.meituan_comments || 0,
+                    meituan_reviews: item.meituan_reviews || []
+                }));
+
+                // 统计商圈数据
+                data.forEach(item => {
+                    var d = item.district || '其他';
+                    if (!districtStats[d]) districtStats[d] = { count: 0, totalCost: 0, totalRating: 0 };
+                    districtStats[d].count++;
+                    districtStats[d].totalCost += item.cost || 0;
+                    districtStats[d].totalRating += item.meituan_rating || 0;
+                });
+                for (var d in districtStats) {
+                    districtStats[d].avgCost = Math.round(districtStats[d].totalCost / districtStats[d].count);
+                    districtStats[d].avgRating = (districtStats[d].totalRating / districtStats[d].count).toFixed(1);
+                }
+
+                createScenicMarkers();
+                createFoodMarkers();
+                initCluster();
+                showDistrictStats();
+            });
+
+        // 创建景点标记
+        function createScenicMarkers() {
+            scenicData.forEach(function(item) {
+                var marker = new AMap.Marker({
+                    position: [item.lng, item.lat],
+                    title: item.name,
+                    offset: new AMap.Pixel(-8, -8),
+                    extData: item
+                });
+
+                marker.setContent('<div style="width:16px;height:16px;background:#667eea;border:2px solid white;border-radius:50%;box-shadow:0 1px 4px rgba(0,0,0,0.3);"></div>');
+
+                marker.on('click', function() {
+                    var info = new AMap.InfoWindow({
+                        content: '<div class="info-window">' +
+                            '<h4>' + item.name + '</h4>' +
+                            '<div class="info-row"><span class="info-label">地址</span><span class="info-value">' + (item.address || '暂无') + '</span></div>' +
+                            '<div class="info-row"><span class="info-label">分类</span><span class="info-value">' + (item.type || '景点') + '</span></div>' +
+                            '</div>',
+                        offset: new AMap.Pixel(0, -10)
+                    });
+                    info.open(map, marker.getPosition());
+                });
+
+                scenicMarkers.push(marker);
+            });
+        }
+
+        // 创建美食标记
+        function createFoodMarkers() {
+            foodData.forEach(function(item) {
+                var isHighRating = item.meituan_rating >= 4.7;
+                var color = isHighRating ? '#f5a623' : '#e74c3c';
+
+                var marker = new AMap.Marker({
+                    position: [item.lng, item.lat],
+                    title: item.name,
+                    offset: new AMap.Pixel(-7, -7),
+                    extData: item
+                });
+
+                marker.setContent('<div style="width:14px;height:14px;background:' + color + ';border:2px solid white;border-radius:50%;box-shadow:0 1px 4px rgba(0,0,0,0.3);"></div>');
+
+                marker.on('click', function() {
+                    var stars = '';
+                    for (var i = 0; i < Math.round(item.meituan_rating); i++) stars += '*';
+                    var reviewsHtml = '';
+                    if (item.meituan_reviews && item.meituan_reviews.length > 0) {
+                        reviewsHtml = '<div class="reviews"><div class="review-title">精选评论</div>';
+                        item.meituan_reviews.forEach(function(r) {
+                            reviewsHtml += '<div class="review-item">' + r + '</div>';
+                        });
+                        reviewsHtml += '</div>';
+                    }
+
+                    // 用户评论
+                    var userCommentsHtml = '';
+                    var comments = userComments[item.name] || [];
+                    if (comments.length > 0) {
+                        userCommentsHtml = '<div class="user-comments"><h5>用户评论</h5>';
+                        comments.forEach(function(c) {
+                            userCommentsHtml += '<div class="user-comment-item"><strong>' + c.user + '</strong> (' + c.rating + '分): ' + c.content + '</div>';
+                        });
+                        userCommentsHtml += '</div>';
+                    }
+
+                    // 评论表单
+                    var commentForm = '<div class="comment-form">' +
+                        '<h5>发表评论</h5>' +
+                        '<input type="text" id="commentUser" placeholder="您的昵称">' +
+                        '<select id="commentRating">' +
+                        '<option value="5">5分</option><option value="4">4分</option><option value="3">3分</option><option value="2">2分</option><option value="1">1分</option>' +
+                        '</select>' +
+                        '<textarea id="commentContent" placeholder="请输入评论..."></textarea>' +
+                        '<button onclick="submitComment(\'' + item.name.replace(/'/g, "\\'") + '\')">提交</button>' +
+                        '</div>';
+
+                    var info = new AMap.InfoWindow({
+                        content: '<div class="info-window">' +
+                            '<h4>' + item.name + '</h4>' +
+                            '<div class="info-row"><span class="info-label">地址</span><span class="info-value">' + (item.address || '暂无') + '</span></div>' +
+                            '<div class="info-row"><span class="info-label">商圈</span><span class="info-value">' + item.district + '</span></div>' +
+                            '<div class="info-row"><span class="info-label">分类</span><span class="info-value">' + item.type + '</span></div>' +
+                            '<div class="info-row"><span class="info-label">人均</span><span class="info-value">' + item.cost + '元</span></div>' +
+                            '<div class="info-row"><span class="info-label">高德</span><span class="info-value"><span class="rating-star">' + stars + '</span> ' + item.rating + '</span></div>' +
+                            '<div class="info-row"><span class="info-label">美团</span><span class="info-value"><span class="rating-star">' + stars + '</span> ' + item.meituan_rating + ' (' + item.meituan_comments + '条)</span></div>' +
+                            reviewsHtml +
+                            userCommentsHtml +
+                            commentForm +
+                            '</div>',
+                        offset: new AMap.Pixel(0, -10),
+                        size: new AMap.Size(320, 0)
+                    });
+                    info.open(map, marker.getPosition());
+                });
+
+                foodMarkers.push(marker);
+            });
+        }
+
+        // 提交评论
+        function submitComment(storeName) {
+            var user = document.getElementById('commentUser').value;
+            var rating = document.getElementById('commentRating').value;
+            var content = document.getElementById('commentContent').value;
+
+            if (!user || !content) {
+                alert('请填写完整信息');
+                return;
+            }
+
+            if (!userComments[storeName]) {
+                userComments[storeName] = [];
+            }
+
+            userComments[storeName].unshift({
+                user: user,
+                rating: rating,
+                content: content,
+                time: new Date().toLocaleString()
+            });
+
+            alert('评论提交成功');
+            map.clearInfoWindow();
+        }
+
+        // 初始化聚类
+        function initCluster() {
+            if (cluster) cluster.setMap(null);
+            var allMarkers = [];
+            if (document.getElementById('showScenic').checked) allMarkers = allMarkers.concat(scenicMarkers);
+            if (document.getElementById('showFood').checked) allMarkers = allMarkers.concat(foodMarkers);
+            cluster = new AMap.MarkerCluster(map, allMarkers, {
+                gridSize: 60,
+                maxZoom: 15
+            });
+        }
+
+        // 初始化热力图
+        function initHeatmap() {
+            if (!heatmap) {
+                map.plugin(["AMap.HeatMap"], function() {
+                    heatmap = new AMap.HeatMap(map, {
+                        radius: 25,
+                        opacity: [0, 0.8]
+                    });
+                    var points = foodData.map(function(item) {
+                        return { lng: item.lng, lat: item.lat, count: 1 };
+                    });
+                    heatmap.setDataSet({ data: points, max: 5 });
+                });
+            }
+        }
+
+        function toggleLayer() {
+            var showScenic = document.getElementById('showScenic').checked;
+            var showFood = document.getElementById('showFood').checked;
+            scenicMarkers.forEach(function(m) { m.setMap(showScenic ? map : null); });
+            foodMarkers.forEach(function(m) { m.setMap(showFood ? map : null); });
+            updateCluster();
+        }
+
+        function toggleCluster() { updateCluster(); }
+
+        function updateCluster() {
+            if (cluster) cluster.setMap(null);
+            if (document.getElementById('showCluster').checked) initCluster();
+        }
+
+        function toggleHeatmap() {
+            if (document.getElementById('showHeatmap').checked) {
+                initHeatmap();
+                heatmap.show();
+            } else if (heatmap) {
+                heatmap.hide();
+            }
+        }
+
+        function searchMarkers() {
+            var keyword = document.getElementById('searchInput').value.toLowerCase();
+            if (!keyword) {
+                scenicMarkers.forEach(function(m) { m.show(); });
+                foodMarkers.forEach(function(m) { m.show(); });
+                return;
+            }
+            scenicMarkers.forEach(function(m) {
+                var d = m.getExtData();
+                m.show(d.name.toLowerCase().includes(keyword));
+            });
+            foodMarkers.forEach(function(m) {
+                var d = m.getExtData();
+                m.show(d.name.toLowerCase().includes(keyword) || d.district.toLowerCase().includes(keyword));
+            });
+        }
+
+        function showDistrictStats() {
+            var html = '';
+            var sorted = Object.keys(districtStats).sort(function(a, b) {
+                return districtStats[b].count - districtStats[a].count;
+            });
+            sorted.forEach(function(d) {
+                var s = districtStats[d];
+                html += '<div class="district-item" onclick="zoomToDistrict(\'' + d + '\')">' +
+                    '<div class="district-name">' + d + '</div>' +
+                    '<div class="district-info">' + s.count + '家 | 人均' + s.avgCost + '元 | ' + s.avgRating + '分</div>' +
+                    '</div>';
+            });
+            document.getElementById('districtStats').innerHTML = html;
+        }
+
+        function zoomToDistrict(district) {
+            var centers = {
+                "春熙路": "104.0825,30.6620",
+                "太古里": "104.0830,30.6610",
+                "宽窄巷子": "104.0595,30.6700",
+                "锦里": "104.0480,30.6500",
+                "建设路": "104.1150,30.6700",
+                "九眼桥": "104.0950,30.6480",
+                "玉林": "104.0600,30.6300",
+                "文殊院": "104.0700,30.6780",
+                "东郊记忆": "104.1200,30.6650",
+                "环球中心": "104.0650,30.5720"
+            };
+            if (centers[district]) {
+                var p = centers[district].split(',');
+                map.setZoomAndCenter(15, [parseFloat(p[0]), parseFloat(p[1])]);
+            }
+        }
+
+        function fitView() {
+            var all = scenicMarkers.concat(foodMarkers);
+            map.setFitView(all, false, [50, 50, 50, 50]);
+        }
+
+        createScenicMarkers();
+        map.on('complete', fitView);
+    </script>
+</body>
+</html>
