@@ -267,6 +267,8 @@ function showSpotMarkers() {
             marker.setMap(map);
             if (!toggleSpotVisible) marker.setVisible(false);
             spotMarkers.push(marker);
+        } catch (e) {
+            console.warn('[Map] 景点标记失败:', spot.name, e);
         }
     });
 
