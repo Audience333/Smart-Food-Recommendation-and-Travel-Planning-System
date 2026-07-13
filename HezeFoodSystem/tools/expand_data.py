@@ -363,6 +363,56 @@ def generate_food_tags(name, category, district, score, price, type_code, openti
         if tag not in tags:
             tags.append(tag)
 
+    category_defaults = {
+        "汤类": ["鲜香", "原味", "清淡", "暖胃", "滋补"],
+        "面食": ["筋道", "快餐", "主食"],
+        "小吃": ["现点现做", "地方特色"],
+        "正餐": ["菜品丰富", "环境好"],
+        "烧烤": ["孜然", "宵夜", "朋友聚会"],
+        "甜品": ["甜口", "下午茶"],
+        "饮品": ["清爽", "下午茶"],
+        "凉菜": ["开胃"],
+    }
+    for tag in category_defaults.get(category, []):
+        tags.append(tag)
+
+    if price <= 10:
+        for t in ["平价实惠", "快餐"]:
+            tags.append(t)
+    elif price <= 30:
+        for t in ["家常", "堂食"]:
+            tags.append(t)
+    elif price <= 60:
+        for t in ["品质餐厅", "朋友聚会"]:
+            tags.append(t)
+    elif price <= 100:
+        for t in ["环境好", "商务宴请"]:
+            tags.append(t)
+    else:
+        for t in ["高端", "宴请", "包厢"]:
+            tags.append(t)
+
+    taste_keys = set(TASTE_KEYWORDS.keys())
+    existing_taste_count = sum(1 for t in tags if t in taste_keys)
+    if existing_taste_count < 3:
+        flavor_pool = ["鲜香", "原味", "五香", "酱香", "清淡"]
+        seed = sum(ord(c) for c in name)
+        available = [f for f in flavor_pool if f not in tags]
+        available.sort(key=lambda f: (hash(f + name) % 10000))
+        count = 2 + (seed % 2)
+        count = min(count, len(available))
+        for tag in available[:count]:
+            tags.append(tag)
+
+    if district:
+        tags.append(district + "美食")
+        tags.append(district + "人气")
+
+    if "菏泽" not in name:
+        tags.append("菏泽")
+    tags.append("美食推荐")
+    tags.append("人气美食")
+
     seen = set()
     unique_tags = []
     for tag in tags:
