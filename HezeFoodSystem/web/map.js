@@ -13,16 +13,12 @@ var map = null;
 var geocoder = null;
 var foodMarkers = [];
 var spotMarkers = [];
-var routePolyline = null;
-var routeMarkers = [];
 var foodData = [];
 var spotData = [];
-var routeData = null;
 var activeCategories = new Set();
 var addressCache = {};       // 逆地理编码缓存
 var toggleFoodVisible = true;
 var toggleSpotVisible = true;
-var toggleRouteVisible = true;
 var currentRoutePolylines = [];
 var currentRouteMarkers = [];
 var routeWaypoints = [];
@@ -120,13 +116,6 @@ async function loadData() {
             .catch(e => console.warn('[Map] spot.json:', e))
     );
 
-    loadPromises.push(
-        fetch('data/route.json')
-            .then(r => r.ok ? r.json() : Promise.reject('HTTP ' + r.status))
-            .then(d => { routeData = d; console.log('[Map] 路线:', d.name); })
-            .catch(e => console.warn('[Map] route.json:', e))
-    );
-
     await Promise.all(loadPromises);
 
     updateStats();
@@ -138,9 +127,6 @@ async function loadData() {
     if (map) {
         if (foodData.length > 0) showFoodMarkers();
         if (spotData.length > 0) showSpotMarkers();
-        if (routeData) showRoute();
-
-        // 自动适配视野
         setTimeout(autoFitView, 500);
     }
 }
@@ -395,137 +381,6 @@ function showSpotDetail(spot) {
     }
 }
 
-// ==================== 路线可视化 ====================
-
-function showRoute() {
-    if (!routeData || !routeData.found || !map) return;
-
-    if (routePolyline) routePolyline.setMap(null);
-    routeMarkers.forEach(function (m) { m.setMap(null); });
-    routeMarkers = [];
-
-    try {
-        var path = routeData.path.map(function (p) {
-            return new AMap.LngLat(p[0], p[1]);
-        });
-
-        // 路线折线
-        routePolyline = new AMap.Polyline({
-            path: path,
-            strokeColor: '#ff5722',
-            strokeWeight: 6,
-            strokeOpacity: 0.7,
-            lineJoin: 'round',
-            showDir: true,
-            dirColor: '#fff'
-        });
-        routePolyline.setMap(map);
-        if (!toggleRouteVisible) routePolyline.setVisible(false);
-
-        // 路径点标记
-        routeData.waypoints.forEach(function (point, i) {
-            var isFood = point.type === 'food';
-            var isStart = i === 0;
-            var isEnd = i === routeData.waypoints.length - 1;
-            var label = isStart ? '起' : (isEnd ? '终' : String(i));
-
-            var bgColor = isFood ? '#ff5722' : '#1565c0';
-            var shape = isFood ? '50%' : '4px';
-            var size = isStart || isEnd ? '36px' : '28px';
-
-            var content =
-                '<div style="' +
-                'background:' + bgColor + ';' +
-                'color:white;' +
-                'width:' + size + ';height:' + size + ';' +
-                'border-radius:' + shape + ';' +
-                'display:flex;align-items:center;justify-content:center;' +
-                'font-size:' + (isStart || isEnd ? '14px' : '12px') + ';' +
-                'font-weight:bold;' +
-                'border:3px solid white;' +
-                'box-shadow:0 2px 8px rgba(0,0,0,0.3);' +
-                '">' + label + '</div>';
-
-            var marker = new AMap.Marker({
-                position: new AMap.LngLat(point.lng, point.lat),
-                content: content,
-                offset: new AMap.Pixel(-parseInt(size) / 2, -parseInt(size) / 2),
-                zIndex: 200,
-                title: point.name
-            });
-
-            // 点击路径点显示详情
-            marker.on('click', function () {
-                var wp = point;
-                var wpHtml =
-                    '<div class="info-window">' +
-                    '<h4 style="color:' + bgColor + ';border-color:' + bgColor + ';">' +
-                    (isFood ? '[美食] ' : '[景点] ') + wp.name + '</h4>' +
-                    '<p style="color:#666;">' + (isStart ? '起点' : (isEnd ? '终点' : '途经点 ' + i)) + '</p>' +
-                    '</div>';
-                new AMap.InfoWindow({
-                    content: wpHtml,
-                    offset: new AMap.Pixel(0, -20)
-                }).open(map, [wp.lng, wp.lat]);
-            });
-
-            marker.setMap(map);
-            if (!toggleRouteVisible) marker.setVisible(false);
-            routeMarkers.push(marker);
-        });
-
-        // 路线标签
-        var midPath = path[Math.floor(path.length / 2)];
-        var routeLabel = new AMap.Marker({
-            position: midPath,
-            content: '<div style="background:white;color:#ff5722;padding:4px 12px;border-radius:12px;font-size:12px;font-weight:bold;box-shadow:0 2px 6px rgba(0,0,0,0.2);border:1px solid #ff5722;">' +
-                (routeData.totalDistance / 1000).toFixed(1) + 'km / ' + routeData.totalTime.toFixed(0) + 'min</div>',
-            offset: new AMap.Pixel(-40, -20),
-            zIndex: 150
-        });
-        routeLabel.setMap(map);
-        if (!toggleRouteVisible) routeLabel.setVisible(false);
-        routeMarkers.push(routeLabel);
-
-        console.log('[Map] 路线显示完成');
-    } catch (e) {
-        console.error('[Map] 路线显示失败:', e);
-    }
-
-    updateRouteInfo();
-}
-
-function updateRouteInfo() {
-    var div = document.getElementById('routeInfo');
-    if (!routeData || !routeData.found) {
-        div.innerHTML = '<p style="color:#999;text-align:center;">暂无路线数据</p>';
-        return;
-    }
-
-    var html = '<div class="route-header">' +
-        '<h4>📋 ' + routeData.name + '</h4>' +
-        '<p>总距离: <b>' + (routeData.totalDistance / 1000).toFixed(1) + ' 公里</b></p>' +
-        '<p>预计时间: <b>' + routeData.totalTime.toFixed(0) + ' 分钟</b></p>' +
-        '</div>';
-
-    routeData.waypoints.forEach(function (point, i) {
-        var isFood = point.type === 'food';
-        var isStart = i === 0;
-        var isEnd = i === routeData.waypoints.length - 1;
-
-        html += '<div class="waypoint">' +
-            '<div class="waypoint-icon ' + (isFood ? 'food' : 'spot') + '">' +
-            (isStart ? '起' : (isEnd ? '终' : i)) + '</div>' +
-            '<span class="waypoint-name">' + point.name + '</span></div>';
-
-        if (i < routeData.waypoints.length - 1) {
-            html += '<div style="text-align:center;color:#ccc;font-size:18px;line-height:0.5;">↓</div>';
-        }
-    });
-
-    div.innerHTML = html;
-}
-
 // ==================== 视野自适应 ====================
 
 function autoFitView() {
@@ -635,13 +490,6 @@ function generateCategoryFilters() {
 function updateStats() {
     document.getElementById('foodCount').textContent = foodData.length;
     document.getElementById('spotCount').textContent = spotData.length;
-    if (routeData && routeData.found) {
-        document.getElementById('routeDistance').textContent = (routeData.totalDistance / 1000).toFixed(1);
-        document.getElementById('routeTime').textContent = routeData.totalTime.toFixed(0);
-    } else {
-        document.getElementById('routeDistance').textContent = '0';
-        document.getElementById('routeTime').textContent = '0';
-    }
 }
 
 function populateSelectOptions() {
