@@ -104,7 +104,7 @@ public:
 
         std::cout << "[RouteService] 加载城市数据..." << std::endl;
 
-        // 加载美食数据
+        // 加载美食数据（美食ID已从101起，避免与景点ID冲突）
         SeqList<Food> foods = FileManager::loadFoodData(foodFile);
         for (int i = 0; i < foods.size(); i++) {
             MapNode node(foods[i].id, foods[i].name, 0,

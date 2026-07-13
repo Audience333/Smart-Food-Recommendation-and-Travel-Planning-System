@@ -324,11 +324,11 @@ void handleDemo() {
 
     // 步骤 3：浏览一个美食
     cout << "【步骤 3】浏览美食详情" << endl;
-    g_system.viewFoodDetail(1);  // 菏泽烧牛肉
+    g_system.viewFoodDetail(101);  // 菏泽烧牛肉（ID已重新编号为101+）
 
     // 步骤 4：收藏该美食
     cout << "【步骤 4】收藏美食" << endl;
-    g_system.addFavorite(1);
+    g_system.addFavorite(101);
 
     // 步骤 5：查看收藏列表
     cout << "【步骤 5】查看收藏列表" << endl;

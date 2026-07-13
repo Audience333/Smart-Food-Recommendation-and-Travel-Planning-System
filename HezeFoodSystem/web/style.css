@@ -397,3 +397,52 @@ body {
         font-size: 18px;
     }
 }
+
+/* ==================== 自定义地图标记样式 ==================== */
+.food-marker {
+    transition: all 0.2s ease;
+}
+.food-marker:hover {
+    transform: rotate(-45deg) scale(1.2) !important;
+    z-index: 999 !important;
+}
+.spot-marker {
+    transition: all 0.2s ease;
+}
+.spot-marker:hover {
+    transform: rotate(45deg) scale(1.2) !important;
+    z-index: 999 !important;
+}
+
+/* ==================== 信息窗口增强 ==================== */
+.info-window h4 {
+    padding-bottom: 8px;
+    margin-bottom: 10px;
+}
+
+.info-window .info-row {
+    margin-bottom: 5px;
+}
+
+.info-window .info-row .info-label {
+    color: #999;
+    font-size: 13px;
+    width: 50px;
+    display: inline-block;
+}
+
+/* ==================== 地图加载动画 ==================== */
+#map {
+    transition: opacity 0.5s ease;
+}
+
+/* ==================== 标记聚类样式 ==================== */
+.amap-marker-content {
+    cursor: pointer;
+}
+
+/* ==================== 分类标签计数徽章 ==================== */
+.category-tag .count {
+    font-size: 11px;
+    opacity: 0.7;
+}

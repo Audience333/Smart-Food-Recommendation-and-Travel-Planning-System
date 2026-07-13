@@ -196,7 +196,7 @@ def convert_food(pois):
                 pass
 
         foods.append({
-            "id": i + 1,
+            "id": i + 101,
             "name": name,
             "lng": lng,
             "lat": lat,
