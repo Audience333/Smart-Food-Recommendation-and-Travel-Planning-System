@@ -5,45 +5,39 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>菏泽美食推荐与城市漫游规划系统</title>
     <link rel="stylesheet" href="style.css">
-    <!-- 高德地图 JavaScript API -->
-    <script src="https://webapi.amap.com/maps?v=2.0&key=647bb3e7a596c479b998f3e20a5a486a"></script>
+    <script src="https://webapi.amap.com/loader.js"></script>
 </head>
 <body>
-    <!-- 顶部标题栏 -->
     <div class="header">
-        <h1>🏮 菏泽美食推荐与城市漫游规划系统</h1>
+        <h1>菏泽美食推荐与城市漫游规划系统</h1>
         <p>基于 C++ 数据结构 + 高德地图可视化</p>
     </div>
 
-    <!-- 主容器 -->
     <div class="container">
-        <!-- 左侧控制面板 -->
         <div class="sidebar">
-            <!-- 图层控制 -->
             <div class="panel">
-                <h3>📍 图层控制</h3>
+                <h3>图层控制</h3>
                 <div class="control-group">
                     <label class="toggle">
                         <input type="checkbox" id="toggleFood" checked>
                         <span class="toggle-slider"></span>
-                        <span class="toggle-label">🍜 美食标记</span>
+                        <span class="toggle-label">美食标记</span>
                     </label>
                     <label class="toggle">
                         <input type="checkbox" id="toggleSpot" checked>
                         <span class="toggle-slider"></span>
-                        <span class="toggle-label">🏛️ 景点标记</span>
+                        <span class="toggle-label">景点标记</span>
                     </label>
                     <label class="toggle">
                         <input type="checkbox" id="toggleRoute" checked>
                         <span class="toggle-slider"></span>
-                        <span class="toggle-label">🛤️ 推荐路线</span>
+                        <span class="toggle-label">推荐路线</span>
                     </label>
                 </div>
             </div>
 
-            <!-- 数据统计 -->
             <div class="panel">
-                <h3>📊 数据统计</h3>
+                <h3>数据统计</h3>
                 <div class="stats">
                     <div class="stat-item">
                         <span class="stat-value" id="foodCount">0</span>
@@ -64,53 +58,31 @@
                 </div>
             </div>
 
-            <!-- 路线信息 -->
             <div class="panel">
-                <h3>🗺️ 推荐路线</h3>
+                <h3>推荐路线</h3>
                 <div id="routeInfo" class="route-info">
                     <p class="loading">加载中...</p>
                 </div>
             </div>
 
-            <!-- 美食分类筛选 -->
             <div class="panel">
-                <h3>🔍 美食分类</h3>
-                <div class="category-filters" id="categoryFilters">
-                    <!-- 动态生成 -->
-                </div>
-            </div>
-
-            <!-- 系统说明 -->
-            <div class="panel">
-                <h3>ℹ️ 系统说明</h3>
-                <div class="info-text">
-                    <p>本系统使用 C++ 实现核心算法：</p>
-                    <ul>
-                        <li>Dijkstra 最短路径</li>
-                        <li>BFS 广度优先搜索</li>
-                        <li>余弦相似度推荐</li>
-                        <li>Haversine 距离计算</li>
-                    </ul>
-                    <p>高德地图仅负责可视化展示</p>
-                </div>
+                <h3>美食分类</h3>
+                <div class="category-filters" id="categoryFilters"></div>
             </div>
         </div>
 
-        <!-- 地图容器 -->
         <div class="map-container">
             <div id="map"></div>
-            <!-- 地图控制按钮 -->
             <div class="map-controls">
                 <button id="btnZoomIn" title="放大">+</button>
                 <button id="btnZoomOut" title="缩小">-</button>
-                <button id="btnReset" title="重置视图">⟲</button>
+                <button id="btnReset" title="重置视图">R</button>
             </div>
         </div>
     </div>
 
-    <!-- 底部状态栏 -->
     <div class="footer">
-        <span>© 2024 菏泽美食推荐与城市漫游规划系统</span>
+        <span>菏泽美食推荐与城市漫游规划系统</span>
         <span>C++ 数据结构课程设计</span>
     </div>
 
