@@ -7,20 +7,38 @@ import os
 import math
 
 def parse_food_line(line):
-    """解析美食数据行"""
+    """解析美食数据行（支持可选address字段）"""
     parts = [p.strip() for p in line.split('|')]
     if len(parts) < 8:
         return None
     try:
+        fid = int(parts[0])
+        name = parts[1]
+        lng = float(parts[2])
+        lat = float(parts[3])
+        price = float(parts[4])
+        score = float(parts[5])
+        category = parts[6]
+
+        if len(parts) >= 9:
+            part8 = parts[7]
+            is_address = ("区" in part8 or "路" in part8 or "街" in part8 or
+                         "市" in part8 or "县" in part8 or part8 == "-")
+            if is_address:
+                address = part8
+                tags_part = parts[8] if len(parts) >= 9 else ""
+            else:
+                address = "-"
+                tags_part = parts[7]
+        else:
+            address = "-"
+            tags_part = parts[7]
+
         return {
-            'id': int(parts[0]),
-            'name': parts[1],
-            'lng': float(parts[2]),
-            'lat': float(parts[3]),
-            'price': float(parts[4]),
-            'score': float(parts[5]),
-            'category': parts[6],
-            'tags': [t.strip() for t in parts[7].split(',') if t.strip()]
+            'id': fid, 'name': name, 'lng': lng, 'lat': lat,
+            'price': price, 'score': score, 'category': category,
+            'address': address,
+            'tags': [t.strip() for t in tags_part.split(',') if t.strip()]
         }
     except (ValueError, IndexError):
         return None
