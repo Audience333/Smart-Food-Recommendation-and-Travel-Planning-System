@@ -28,11 +28,7 @@
                         <span class="toggle-slider"></span>
                         <span class="toggle-label">景点标记</span>
                     </label>
-                    <label class="toggle">
-                        <input type="checkbox" id="toggleRoute" checked>
-                        <span class="toggle-slider"></span>
-                        <span class="toggle-label">推荐路线</span>
-                    </label>
+
                 </div>
             </div>
 
@@ -81,9 +77,37 @@
             </div>
 
             <div class="panel">
-                <h3>推荐路线</h3>
-                <div id="routeInfo" class="route-info">
-                    <p class="loading">加载中...</p>
+                <h3>路线规划</h3>
+                <div class="route-planner">
+                    <div class="route-mode">
+                        <span class="route-mode-btn active" data-mode="driving">驾车</span>
+                        <span class="route-mode-btn" data-mode="walking">步行</span>
+                    </div>
+                    <div class="route-select">
+                        <label class="route-select-label">起点</label>
+                        <select id="routeStart" class="route-select-input">
+                            <option value="">-- 选择起点 --</option>
+                        </select>
+                    </div>
+                    <div class="route-select">
+                        <label class="route-select-label">途经点 <span style="font-size:11px;color:#999;">(最多5个)</span></label>
+                        <div id="routeWaypoints" class="route-waypoints"></div>
+                        <button id="btnAddWaypoint" class="route-add-btn">+ 添加途经点</button>
+                    </div>
+                    <div class="route-select">
+                        <label class="route-select-label">终点</label>
+                        <select id="routeEnd" class="route-select-input">
+                            <option value="">-- 选择终点 --</option>
+                        </select>
+                    </div>
+                    <div class="route-actions">
+                        <button id="btnPlanRoute" class="route-plan-btn">规划路线</button>
+                        <button id="btnClearRoute" class="route-clear-btn">清空</button>
+                    </div>
+                </div>
+                <div id="routeDetail" class="route-detail" style="display:none;">
+                    <div id="routeSummary" class="route-summary"></div>
+                    <div id="routeSegments" class="route-segments"></div>
                 </div>
             </div>
 
