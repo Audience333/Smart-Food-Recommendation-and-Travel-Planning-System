@@ -71,7 +71,7 @@ def main():
     edges = []
 
     # ===== 牡丹区景点间连接 =====
-    mudan_spots = [1, 2, 8, 9, 10, 11, 12, 13, 14, 15, 16, 20]
+    mudan_spots = [1, 2, 8, 9, 10, 11, 12, 13, 14, 15, 16, 20, 18]
     # 相邻景点连接（根据实际地理位置）
     spot_connections = [
         (1, 2), (1, 13), (1, 14),   # 曹州牡丹园 ↔ 百花园、古今园、七里河
@@ -94,13 +94,15 @@ def main():
             edges.append((b, a, int(dist), t))  # 无向
 
     # ===== 景点 ↔ 附近美食 =====
-    # 每个景点连接附近的美食（3km范围内）
+    # 每个景点连接附近的美食（5km范围内）
     for sid in mudan_spots:
         if sid not in all_nodes:
             continue
         slng, slat = all_nodes[sid][1], all_nodes[sid][2]
         nearby = []
-        for fid in range(101, 121):  # 牡丹区美食 IDs 101-120
+        # 牡丹区美食: 原有101-120 + 新增164-188
+        mudan_food_ids = list(range(101, 121)) + list(range(164, 189))
+        for fid in mudan_food_ids:
             if fid not in all_nodes:
                 continue
             flng, flat = all_nodes[fid][1], all_nodes[fid][2]
@@ -133,6 +135,19 @@ def main():
                         edges.append((a, b, int(dist), t))
                         edges.append((b, a, int(dist), t))
 
+    # 新增牡丹区美食间连接 (164-188)
+    new_mudan_foods = list(range(164, 189))
+    for i in range(len(new_mudan_foods)):
+        for j in range(i+1, len(new_mudan_foods)):
+            a, b = new_mudan_foods[i], new_mudan_foods[j]
+            if a in all_nodes and b in all_nodes:
+                dist = haversine(all_nodes[a][1], all_nodes[a][2],
+                               all_nodes[b][1], all_nodes[b][2])
+                if dist < 5000:
+                    t = time_from_distance(dist)
+                    edges.append((a, b, int(dist), t))
+                    edges.append((b, a, int(dist), t))
+
     # ===== 跨区连接（菏泽↔各县城） =====
     district_hubs = {
         'mudan': 1,       # 曹州牡丹园（牡丹区）
@@ -150,17 +165,25 @@ def main():
     for i in range(len(hub_ids)):
         for j in range(i+1, len(hub_ids)):
             a, b = hub_ids[i], hub_ids[j]
-            # IDs are already in graph format: spots 1-20, foods 101-163
             aid, bid = a, b
             if aid in all_nodes and bid in all_nodes:
                 dist = haversine(all_nodes[aid][1], all_nodes[aid][2],
                                all_nodes[bid][1], all_nodes[bid][2])
-                # 跨区使用实际道路距离（直线距离 × 1.3）
                 road_dist = int(dist * 1.3)
-                # 车速按60km/h（跨区道路）
                 t = max(1, round(road_dist / (60 * 1000 / 60)))
                 edges.append((aid, bid, road_dist, t))
                 edges.append((bid, aid, road_dist, t))
+
+    # 新增景点连接：牡丹区景点连接各区新景点
+    new_mudan_spots = [sid for sid in range(21, 31) if sid in all_nodes]
+    for nsp in new_mudan_spots:
+        if 1 in all_nodes and nsp in all_nodes:
+            dist = haversine(all_nodes[1][1], all_nodes[1][2],
+                           all_nodes[nsp][1], all_nodes[nsp][2])
+            road_dist = int(dist * 1.3)
+            t = max(1, round(road_dist / (60 * 1000 / 60)))
+            edges.append((1, nsp, road_dist, t))
+            edges.append((nsp, 1, road_dist, t))
 
     # ===== 各县内部连接 =====
     county_ranges = {
@@ -187,6 +210,31 @@ def main():
                         edges.append((a, b, int(dist), t))
                         edges.append((b, a, int(dist), t))
 
+    # ===== 新增各县内部连接（扩展数据） =====
+    new_county_ranges = {
+        'shanxian': (189, 213),
+        'caoxian': (214, 238),
+        'yuncheng': (239, 263),
+        'juye': (264, 288),
+        'dongming': (289, 313),
+        'dingtao': (314, 338),
+        'chengwu': (339, 363),
+        'juancheng': (364, 388),
+    }
+
+    for county, (start, end) in new_county_ranges.items():
+        county_foods = [fid for fid in range(start, end + 1) if fid in all_nodes]
+        for i in range(len(county_foods)):
+            for j in range(i+1, len(county_foods)):
+                a, b = county_foods[i], county_foods[j]
+                if a in all_nodes and b in all_nodes:
+                    dist = haversine(all_nodes[a][1], all_nodes[a][2],
+                                   all_nodes[b][1], all_nodes[b][2])
+                    if dist < 10000:
+                        t = time_from_distance(dist)
+                        edges.append((a, b, int(dist), t))
+                        edges.append((b, a, int(dist), t))
+
     # 去重：使用字典，保留最短距离
     edge_map = {}
     for a, b, dist, t in edges:
@@ -199,17 +247,17 @@ def main():
     with open(output_path, 'w', encoding='utf-8') as f:
         f.write("# 菏泽城市道路连接数据（基于高德地图真实坐标计算）\n")
         f.write("# 格式: 起点ID|终点ID|距离(米)|预计时间(分钟)\n")
-        f.write("# 节点类型: 1-100=景点, 101-999=美食\n")
+        f.write("# 节点类型: 1-110=景点, 101-388=美食\n")
         f.write("# 距离使用Haversine公式计算，跨区道路×1.3系数\n")
         f.write("# 更新日期: 2026-07-13\n")
         f.write("#\n")
 
         sections = [
-            ("牡丹区景点间连接", lambda e: e[0] <= 20 and e[1] <= 20),
-            ("景点↔美食连接", lambda e: (e[0] <= 20 and e[1] >= 101) or (e[1] <= 20 and e[0] >= 101)),
-            ("牡丹区美食间连接", lambda e: 101 <= e[0] <= 120 and 101 <= e[1] <= 120),
-            ("跨区连接", lambda e: (e[0] <= 20 and e[1] >= 121) or (e[1] <= 20 and e[0] >= 121)),
-            ("各县内部连接", lambda e: e[0] >= 121 and e[1] >= 121),
+            ("牡丹区景点间连接", lambda e: e[0] <= 110 and e[1] <= 110),
+            ("景点↔美食连接", lambda e: (e[0] <= 110 and e[1] >= 101) or (e[1] <= 110 and e[0] >= 101)),
+            ("牡丹区美食间连接", lambda e: 101 <= e[0] <= 188 and 101 <= e[1] <= 188),
+            ("跨区连接", lambda e: (e[0] <= 110 and e[1] >= 189) or (e[1] <= 110 and e[0] >= 189)),
+            ("各县内部连接", lambda e: e[0] >= 189 and e[1] >= 189),
         ]
 
         for section_name, filter_fn in sections:
