@@ -131,6 +131,36 @@ def main():
             edges.append((a, b, int(dist), t))
             edges.append((b, a, int(dist), t))  # 无向
 
+    # ===== 各区美食hub连接最近美食（API） =====
+    county_hub_ranges = {
+        121: list(range(122, 129)) + list(range(189, 214)),
+        129: list(range(130, 136)) + list(range(214, 239)),
+        136: list(range(137, 142)) + list(range(239, 264)),
+        142: list(range(143, 148)) + list(range(289, 314)),
+        148: list(range(149, 153)) + list(range(264, 289)),
+        153: list(range(154, 157)) + list(range(314, 339)),
+        157: list(range(158, 161)) + list(range(339, 364)),
+        161: list(range(162, 164)) + list(range(364, 389)),
+    }
+
+    if amap_key:
+        for hub_id, range_ids in county_hub_ranges.items():
+            if hub_id not in all_nodes:
+                continue
+            hlng, hlat = all_nodes[hub_id][1], all_nodes[hub_id][2]
+            candidates = []
+            for fid in range_ids:
+                if fid in all_nodes:
+                    dist = haversine(hlng, hlat, all_nodes[fid][1], all_nodes[fid][2])
+                    candidates.append((fid, dist))
+            candidates.sort(key=lambda x: x[1])
+            for fid, hdist in candidates[:3]:
+                rdist, rdur = amap_driving(amap_key, hlng, hlat, all_nodes[fid][1], all_nodes[fid][2])
+                if rdist is not None:
+                    edges.append((hub_id, fid, rdist, rdur))
+                    edges.append((fid, hub_id, rdist, rdur))
+                    time.sleep(0.5)
+
     # ===== 景点 ↔ 附近美食 =====
     # 每个景点连接附近的美食（5km范围内）
     for sid in mudan_spots:
@@ -181,13 +211,6 @@ def main():
             if a in all_nodes and b in all_nodes:
                 na, nb = all_nodes[a], all_nodes[b]
                 hdist = haversine(na[1], na[2], nb[1], nb[2])
-                if amap_key and hdist < 20000:
-                    rdist, rdur = amap_driving(amap_key, na[1], na[2], nb[1], nb[2])
-                    if rdist is not None:
-                        edges.append((a, b, rdist, rdur))
-                        edges.append((b, a, rdist, rdur))
-                        time.sleep(0.5)
-                        continue
                 if hdist < 5000:
                     t = time_from_distance(hdist)
                     edges.append((a, b, int(hdist), t))
@@ -275,13 +298,6 @@ def main():
                 if a in all_nodes and b in all_nodes:
                     na, nb = all_nodes[a], all_nodes[b]
                     hdist = haversine(na[1], na[2], nb[1], nb[2])
-                    if amap_key and hdist < 20000:
-                        rdist, rdur = amap_driving(amap_key, na[1], na[2], nb[1], nb[2])
-                        if rdist is not None:
-                            edges.append((a, b, rdist, rdur))
-                            edges.append((b, a, rdist, rdur))
-                            time.sleep(0.5)
-                            continue
                     if hdist < 10000:
                         t = time_from_distance(hdist)
                         edges.append((a, b, int(hdist), t))
