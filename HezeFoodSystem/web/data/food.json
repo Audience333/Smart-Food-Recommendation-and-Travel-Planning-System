@@ -8,6 +8,7 @@
     "score": 4.5,
     "category": "小吃",
     "address": "-",
+    "opentime": "-",
     "tags": [
       "牛肉",
       "菏泽特色",
@@ -23,6 +24,7 @@
     "score": 4.4,
     "category": "面食",
     "address": "-",
+    "opentime": "-",
     "tags": [
       "面食",
       "早餐",
@@ -39,6 +41,7 @@
     "score": 4.5,
     "category": "面食",
     "address": "-",
+    "opentime": "-",
     "tags": [
       "面食",
       "早餐",
@@ -55,6 +58,7 @@
     "score": 4.1,
     "category": "面食",
     "address": "-",
+    "opentime": "-",
     "tags": [
       "面食",
       "早餐",
@@ -70,6 +74,7 @@
     "score": 4.2,
     "category": "饮品",
     "address": "-",
+    "opentime": "-",
     "tags": [
       "饮品",
       "早餐",
@@ -85,6 +90,7 @@
     "score": 4.6,
     "category": "汤类",
     "address": "-",
+    "opentime": "-",
     "tags": [
       "汤品",
       "早餐",
@@ -101,6 +107,7 @@
     "score": 4.5,
     "category": "正餐",
     "address": "-",
+    "opentime": "-",
     "tags": [
       "鱼类",
       "鲁菜",
@@ -116,6 +123,7 @@
     "score": 4.4,
     "category": "正餐",
     "address": "-",
+    "opentime": "-",
     "tags": [
       "猪肉",
       "鲁菜",
@@ -132,6 +140,7 @@
     "score": 4.6,
     "category": "汤类",
     "address": "-",
+    "opentime": "-",
     "tags": [
       "汤品",
       "菏泽特色",
@@ -147,6 +156,7 @@
     "score": 4.2,
     "category": "小吃",
     "address": "-",
+    "opentime": "-",
     "tags": [
       "菏泽特色",
       "平价"
@@ -161,6 +171,7 @@
     "score": 4.6,
     "category": "面食",
     "address": "-",
+    "opentime": "-",
     "tags": [
       "面食",
       "羊肉",
@@ -176,6 +187,7 @@
     "score": 4.4,
     "category": "小吃",
     "address": "-",
+    "opentime": "-",
     "tags": [
       "鸡肉",
       "菏泽特色",
@@ -191,6 +203,7 @@
     "score": 4.2,
     "category": "甜品",
     "address": "-",
+    "opentime": "-",
     "tags": [
       "甜品",
       "牡丹区",
@@ -206,6 +219,7 @@
     "score": 4.3,
     "category": "甜品",
     "address": "-",
+    "opentime": "-",
     "tags": [
       "甜品",
       "菏泽特色",
@@ -221,6 +235,7 @@
     "score": 4.5,
     "category": "烧烤",
     "address": "-",
+    "opentime": "-",
     "tags": [
       "烧烤",
       "羊肉",
@@ -236,6 +251,7 @@
     "score": 4.2,
     "category": "小吃",
     "address": "-",
+    "opentime": "-",
     "tags": [
       "菏泽特色"
     ]
@@ -249,6 +265,7 @@
     "score": 4.4,
     "category": "凉菜",
     "address": "-",
+    "opentime": "-",
     "tags": [
       "凉菜",
       "菏泽特色",
@@ -265,6 +282,7 @@
     "score": 4.1,
     "category": "面食",
     "address": "-",
+    "opentime": "-",
     "tags": [
       "面食",
       "早餐",
@@ -280,6 +298,7 @@
     "score": 4.2,
     "category": "汤类",
     "address": "-",
+    "opentime": "-",
     "tags": [
       "汤品",
       "早餐",
@@ -295,6 +314,7 @@
     "score": 4.7,
     "category": "汤类",
     "address": "-",
+    "opentime": "-",
     "tags": [
       "汤品",
       "羊肉",
@@ -312,6 +332,7 @@
     "score": 4.8,
     "category": "汤类",
     "address": "-",
+    "opentime": "-",
     "tags": [
       "汤品",
       "羊肉",
@@ -330,6 +351,7 @@
     "score": 4.3,
     "category": "面食",
     "address": "-",
+    "opentime": "-",
     "tags": [
       "面食",
       "单县特色",
@@ -346,6 +368,7 @@
     "score": 4.5,
     "category": "小吃",
     "address": "-",
+    "opentime": "-",
     "tags": [
       "牛肉",
       "单县特色",
@@ -361,6 +384,7 @@
     "score": 4.1,
     "category": "面食",
     "address": "-",
+    "opentime": "-",
     "tags": [
       "面食",
       "单县特色",
@@ -377,6 +401,7 @@
     "score": 4.2,
     "category": "凉菜",
     "address": "-",
+    "opentime": "-",
     "tags": [
       "凉菜",
       "单县特色",
@@ -392,6 +417,7 @@
     "score": 4.0,
     "category": "汤类",
     "address": "-",
+    "opentime": "-",
     "tags": [
       "汤品",
       "单县特色",
@@ -408,6 +434,7 @@
     "score": 4.1,
     "category": "小吃",
     "address": "-",
+    "opentime": "-",
     "tags": [
       "豆制品",
       "单县特色",
@@ -423,6 +450,7 @@
     "score": 4.0,
     "category": "汤类",
     "address": "-",
+    "opentime": "-",
     "tags": [
       "汤品",
       "单县特色",
@@ -439,6 +467,7 @@
     "score": 4.5,
     "category": "小吃",
     "address": "-",
+    "opentime": "-",
     "tags": [
       "牛肉",
       "曹县特色",
@@ -454,6 +483,7 @@
     "score": 4.2,
     "category": "面食",
     "address": "-",
+    "opentime": "-",
     "tags": [
       "面食",
       "曹县特色",
@@ -470,6 +500,7 @@
     "score": 4.0,
     "category": "凉菜",
     "address": "-",
+    "opentime": "-",
     "tags": [
       "凉菜",
       "曹县特色",
@@ -485,6 +516,7 @@
     "score": 4.4,
     "category": "汤类",
     "address": "-",
+    "opentime": "-",
     "tags": [
       "汤品",
       "羊肉",
@@ -500,6 +532,7 @@
     "score": 4.3,
     "category": "面食",
     "address": "-",
+    "opentime": "-",
     "tags": [
       "面食",
       "牛肉",
@@ -515,6 +548,7 @@
     "score": 4.4,
     "category": "小吃",
     "address": "-",
+    "opentime": "-",
     "tags": [
       "鸡肉",
       "曹县特色",
@@ -530,6 +564,7 @@
     "score": 4.1,
     "category": "面食",
     "address": "-",
+    "opentime": "-",
     "tags": [
       "面食",
       "曹县特色",
@@ -546,6 +581,7 @@
     "score": 4.6,
     "category": "面食",
     "address": "-",
+    "opentime": "-",
     "tags": [
       "面食",
       "郓城特色",
@@ -561,6 +597,7 @@
     "score": 4.4,
     "category": "小吃",
     "address": "-",
+    "opentime": "-",
     "tags": [
       "鸡肉",
       "郓城特色",
@@ -576,6 +613,7 @@
     "score": 4.5,
     "category": "汤类",
     "address": "-",
+    "opentime": "-",
     "tags": [
       "汤品",
       "羊肉",
@@ -591,6 +629,7 @@
     "score": 4.2,
     "category": "面食",
     "address": "-",
+    "opentime": "-",
     "tags": [
       "面食",
       "郓城特色",
@@ -607,6 +646,7 @@
     "score": 4.0,
     "category": "凉菜",
     "address": "-",
+    "opentime": "-",
     "tags": [
       "凉菜",
       "郓城特色",
@@ -622,6 +662,7 @@
     "score": 4.3,
     "category": "面食",
     "address": "-",
+    "opentime": "-",
     "tags": [
       "面食",
       "牛肉",
@@ -637,6 +678,7 @@
     "score": 4.2,
     "category": "小吃",
     "address": "-",
+    "opentime": "-",
     "tags": [
       "东明特色"
     ]
@@ -650,6 +692,7 @@
     "score": 4.4,
     "category": "小吃",
     "address": "-",
+    "opentime": "-",
     "tags": [
       "鸡肉",
       "东明特色",
@@ -665,6 +708,7 @@
     "score": 4.4,
     "category": "汤类",
     "address": "-",
+    "opentime": "-",
     "tags": [
       "汤品",
       "羊肉",
@@ -680,6 +724,7 @@
     "score": 4.1,
     "category": "面食",
     "address": "-",
+    "opentime": "-",
     "tags": [
       "面食",
       "东明特色",
@@ -696,6 +741,7 @@
     "score": 4.5,
     "category": "小吃",
     "address": "-",
+    "opentime": "-",
     "tags": [
       "牛肉",
       "东明特色",
@@ -711,6 +757,7 @@
     "score": 4.2,
     "category": "汤类",
     "address": "-",
+    "opentime": "-",
     "tags": [
       "汤品",
       "东明特色",
@@ -727,6 +774,7 @@
     "score": 4.6,
     "category": "汤类",
     "address": "-",
+    "opentime": "-",
     "tags": [
       "汤品",
       "巨野特色"
@@ -741,6 +789,7 @@
     "score": 4.2,
     "category": "面食",
     "address": "-",
+    "opentime": "-",
     "tags": [
       "面食",
       "巨野特色",
@@ -757,6 +806,7 @@
     "score": 4.4,
     "category": "小吃",
     "address": "-",
+    "opentime": "-",
     "tags": [
       "鸡肉",
       "巨野特色",
@@ -772,6 +822,7 @@
     "score": 4.5,
     "category": "汤类",
     "address": "-",
+    "opentime": "-",
     "tags": [
       "汤品",
       "羊肉",
@@ -787,6 +838,7 @@
     "score": 4.0,
     "category": "凉菜",
     "address": "-",
+    "opentime": "-",
     "tags": [
       "凉菜",
       "巨野特色",
@@ -802,6 +854,7 @@
     "score": 4.1,
     "category": "小吃",
     "address": "-",
+    "opentime": "-",
     "tags": [
       "定陶特色",
       "平价"
@@ -816,6 +869,7 @@
     "score": 4.2,
     "category": "面食",
     "address": "-",
+    "opentime": "-",
     "tags": [
       "面食",
       "定陶特色",
@@ -832,6 +886,7 @@
     "score": 4.4,
     "category": "汤类",
     "address": "-",
+    "opentime": "-",
     "tags": [
       "汤品",
       "羊肉",
@@ -847,6 +902,7 @@
     "score": 4.4,
     "category": "小吃",
     "address": "-",
+    "opentime": "-",
     "tags": [
       "鸡肉",
       "定陶特色",
@@ -862,6 +918,7 @@
     "score": 4.0,
     "category": "凉菜",
     "address": "-",
+    "opentime": "-",
     "tags": [
       "凉菜",
       "成武特色",
@@ -877,6 +934,7 @@
     "score": 4.1,
     "category": "面食",
     "address": "-",
+    "opentime": "-",
     "tags": [
       "面食",
       "成武特色",
@@ -893,6 +951,7 @@
     "score": 4.4,
     "category": "汤类",
     "address": "-",
+    "opentime": "-",
     "tags": [
       "汤品",
       "羊肉",
@@ -908,6 +967,7 @@
     "score": 4.3,
     "category": "小吃",
     "address": "-",
+    "opentime": "-",
     "tags": [
       "鸡肉",
       "成武特色"
@@ -922,6 +982,7 @@
     "score": 4.4,
     "category": "小吃",
     "address": "-",
+    "opentime": "-",
     "tags": [
       "鸡肉",
       "鄄城特色",
@@ -937,6 +998,7 @@
     "score": 4.1,
     "category": "面食",
     "address": "-",
+    "opentime": "-",
     "tags": [
       "面食",
       "鄄城特色",
@@ -953,6 +1015,7 @@
     "score": 4.5,
     "category": "汤类",
     "address": "-",
+    "opentime": "-",
     "tags": [
       "汤品",
       "羊肉",
@@ -968,6 +1031,7 @@
     "score": 4.8,
     "category": "烧烤",
     "address": "振兴路1155号盛世豪庭",
+    "opentime": "-",
     "tags": [
       "烧烤",
       "海鲜",
@@ -984,6 +1048,7 @@
     "score": 4.7,
     "category": "正餐",
     "address": "中华路与牡丹路交汇处佳和城4层426号",
+    "opentime": "-",
     "tags": [
       "聚餐",
       "牡丹区特色",
@@ -999,6 +1064,7 @@
     "score": 4.7,
     "category": "正餐",
     "address": "人民路与长城路交叉口菏泽银座和谐广场5层555号",
+    "opentime": "-",
     "tags": [
       "聚餐",
       "牡丹区特色",
@@ -1014,6 +1080,7 @@
     "score": 4.7,
     "category": "正餐",
     "address": "-",
+    "opentime": "-",
     "tags": [
       "皇家学府二期01003徐升记不改良老火锅"
     ]
@@ -1027,6 +1094,7 @@
     "score": 4.7,
     "category": "正餐",
     "address": "人民路康庄路交叉口西南角桔子酒店西侧01001室",
+    "opentime": "-",
     "tags": [
       "聚餐",
       "牛肉",
@@ -1043,6 +1111,7 @@
     "score": 4.7,
     "category": "烧烤",
     "address": "牡丹路45号欧洲城南区14栋底商",
+    "opentime": "-",
     "tags": [
       "烧烤",
       "鱼类",
@@ -1059,6 +1128,7 @@
     "score": 4.7,
     "category": "正餐",
     "address": "华英路与平原路交叉口东北角",
+    "opentime": "-",
     "tags": [
       "聚餐",
       "牡丹区特色",
@@ -1074,6 +1144,7 @@
     "score": 4.7,
     "category": "汤类",
     "address": "广福北街18号",
+    "opentime": "-",
     "tags": [
       "汤品",
       "羊肉",
@@ -1090,6 +1161,7 @@
     "score": 4.7,
     "category": "汤类",
     "address": "八一路西安路交叉口和苑小区南门01007号",
+    "opentime": "-",
     "tags": [
       "汤品",
       "羊肉",
@@ -1106,6 +1178,7 @@
     "score": 4.7,
     "category": "正餐",
     "address": "解放大街北段银帝超市一楼",
+    "opentime": "-",
     "tags": [
       "聚餐",
       "牡丹区特色",
@@ -1121,6 +1194,7 @@
     "score": 4.7,
     "category": "甜品",
     "address": "-",
+    "opentime": "-",
     "tags": [
       "名门世都东南门南70米"
     ]
@@ -1134,6 +1208,7 @@
     "score": 4.7,
     "category": "甜品",
     "address": "育才路788号",
+    "opentime": "-",
     "tags": [
       "甜品",
       "牡丹区特色",
@@ -1149,6 +1224,7 @@
     "score": 4.6,
     "category": "正餐",
     "address": "东城街道牡丹南路香格里拉东广场",
+    "opentime": "-",
     "tags": [
       "聚餐",
       "牡丹区特色",
@@ -1164,6 +1240,7 @@
     "score": 4.6,
     "category": "正餐",
     "address": "中华路686号菏泽银座商城西门",
+    "opentime": "-",
     "tags": [
       "聚餐",
       "牡丹区特色",
@@ -1179,6 +1256,7 @@
     "score": 4.6,
     "category": "正餐",
     "address": "中山路568号中山国际0001栋04单元01201号",
+    "opentime": "-",
     "tags": [
       "聚餐",
       "牛肉",
@@ -1195,6 +1273,7 @@
     "score": 4.6,
     "category": "正餐",
     "address": "长江路与牡丹路交叉口东60米",
+    "opentime": "-",
     "tags": [
       "聚餐",
       "牡丹区特色",
@@ -1210,6 +1289,7 @@
     "score": 4.6,
     "category": "正餐",
     "address": "府南街与平原路交叉口南200米路西",
+    "opentime": "-",
     "tags": [
       "聚餐",
       "牡丹区特色",
@@ -1225,6 +1305,7 @@
     "score": 4.6,
     "category": "正餐",
     "address": "太原路与黄河路西北角",
+    "opentime": "-",
     "tags": [
       "聚餐",
       "牡丹区特色",
@@ -1240,6 +1321,7 @@
     "score": 4.6,
     "category": "正餐",
     "address": "人民路与长江路往东400米华泰嘉园A3",
+    "opentime": "-",
     "tags": [
       "聚餐",
       "牡丹区特色",
@@ -1255,6 +1337,7 @@
     "score": 4.6,
     "category": "汤类",
     "address": "-",
+    "opentime": "-",
     "tags": [
       "交通未来城西门",
       "全季酒店北邻"
@@ -1269,6 +1352,7 @@
     "score": 4.6,
     "category": "正餐",
     "address": "-",
+    "opentime": "-",
     "tags": [
       "好旺角东南门南50米"
     ]
@@ -1282,6 +1366,7 @@
     "score": 4.6,
     "category": "正餐",
     "address": "长江路661号",
+    "opentime": "-",
     "tags": [
       "聚餐",
       "牡丹区特色",
@@ -1297,6 +1382,7 @@
     "score": 4.6,
     "category": "正餐",
     "address": "中山路894号",
+    "opentime": "-",
     "tags": [
       "聚餐",
       "牡丹区特色",
@@ -1312,6 +1398,7 @@
     "score": 4.6,
     "category": "烧烤",
     "address": "南城街道中山路国色天香北区B2-01006",
+    "opentime": "-",
     "tags": [
       "烧烤",
       "牛肉",
@@ -1328,6 +1415,7 @@
     "score": 4.6,
     "category": "面食",
     "address": "光明路",
+    "opentime": "-",
     "tags": [
       "面食",
       "牡丹区特色",
@@ -1343,6 +1431,7 @@
     "score": 4.7,
     "category": "汤类",
     "address": "义乌小商品城北端新县政府对面",
+    "opentime": "-",
     "tags": [
       "汤品",
       "羊肉",
@@ -1359,6 +1448,7 @@
     "score": 4.6,
     "category": "正餐",
     "address": "园艺街道紫御东郡小区三号楼15-16商铺",
+    "opentime": "-",
     "tags": [
       "聚餐",
       "单县特色",
@@ -1374,6 +1464,7 @@
     "score": 4.6,
     "category": "面食",
     "address": "-",
+    "opentime": "-",
     "tags": [
       "府前温州商城东北门东190米"
     ]
@@ -1387,6 +1478,7 @@
     "score": 4.6,
     "category": "汤类",
     "address": "人民路中段路西",
+    "opentime": "-",
     "tags": [
       "汤品",
       "羊肉",
@@ -1403,6 +1495,7 @@
     "score": 4.6,
     "category": "汤类",
     "address": "向阳路5号",
+    "opentime": "-",
     "tags": [
       "汤品",
       "羊肉",
@@ -1419,6 +1512,7 @@
     "score": 4.6,
     "category": "正餐",
     "address": "湖西路中段路西、向阳路中段路北一层的房产",
+    "opentime": "-",
     "tags": [
       "聚餐",
       "单县特色",
@@ -1434,6 +1528,7 @@
     "score": 4.6,
     "category": "汤类",
     "address": "贾宋庄小区西北门南70米",
+    "opentime": "-",
     "tags": [
       "汤品",
       "羊肉",
@@ -1450,6 +1545,7 @@
     "score": 4.6,
     "category": "正餐",
     "address": "南城街道舜师西路200号银座商城北一层",
+    "opentime": "-",
     "tags": [
       "聚餐",
       "单县特色",
@@ -1465,6 +1561,7 @@
     "score": 4.6,
     "category": "正餐",
     "address": "-",
+    "opentime": "-",
     "tags": [
       "紫玉东郡3期西门西南60米"
     ]
@@ -1478,6 +1575,7 @@
     "score": 4.6,
     "category": "面食",
     "address": "向阳路春秋大酒店对过",
+    "opentime": "-",
     "tags": [
       "面食",
       "单县特色",
@@ -1493,6 +1591,7 @@
     "score": 4.6,
     "category": "正餐",
     "address": "栖霞路与舜师路交叉口北340米",
+    "opentime": "-",
     "tags": [
       "聚餐",
       "单县特色",
@@ -1508,6 +1607,7 @@
     "score": 4.6,
     "category": "汤类",
     "address": "-",
+    "opentime": "-",
     "tags": [
       "中央花园东北1门东50米"
     ]
@@ -1521,6 +1621,7 @@
     "score": 4.6,
     "category": "甜品",
     "address": "-",
+    "opentime": "-",
     "tags": [
       "湖西公园西门南70米"
     ]
@@ -1534,6 +1635,7 @@
     "score": 4.5,
     "category": "正餐",
     "address": "辛格玛超市一楼北侧",
+    "opentime": "-",
     "tags": [
       "聚餐",
       "单县特色",
@@ -1549,6 +1651,7 @@
     "score": 4.5,
     "category": "正餐",
     "address": "-",
+    "opentime": "-",
     "tags": [
       "君悦公馆6号商铺"
     ]
@@ -1562,6 +1665,7 @@
     "score": 4.5,
     "category": "正餐",
     "address": "湖西路69号",
+    "opentime": "-",
     "tags": [
       "聚餐",
       "单县特色",
@@ -1577,6 +1681,7 @@
     "score": 4.5,
     "category": "正餐",
     "address": "向阳路与平原路交叉口向北一百米路东潮正和牛肉火锅",
+    "opentime": "-",
     "tags": [
       "聚餐",
       "牛肉",
@@ -1593,6 +1698,7 @@
     "score": 4.5,
     "category": "正餐",
     "address": "湖西路与向阳路交叉口南100米路西",
+    "opentime": "-",
     "tags": [
       "聚餐",
       "单县特色",
@@ -1608,6 +1714,7 @@
     "score": 4.5,
     "category": "正餐",
     "address": "-",
+    "opentime": "-",
     "tags": [
       "中港豪庭西南门西北50米"
     ]
@@ -1621,6 +1728,7 @@
     "score": 4.5,
     "category": "面食",
     "address": "南城街道湖西路东舜师步行街18-西-3",
+    "opentime": "-",
     "tags": [
       "面食",
       "单县特色",
@@ -1636,6 +1744,7 @@
     "score": 4.5,
     "category": "烧烤",
     "address": "南城街道凤凰城C42幢-23商铺",
+    "opentime": "-",
     "tags": [
       "烧烤",
       "单县特色",
@@ -1651,6 +1760,7 @@
     "score": 4.5,
     "category": "烧烤",
     "address": "园艺街道泰信花园北侧创新路美食广场内浩帆游泳馆旁边金达盛西塔泥炉烤肉",
+    "opentime": "-",
     "tags": [
       "烧烤",
       "单县特色",
@@ -1666,6 +1776,7 @@
     "score": 4.5,
     "category": "面食",
     "address": "胜利路东段徐楼正宗乡村凉面条",
+    "opentime": "-",
     "tags": [
       "面食",
       "单县特色",
@@ -1681,6 +1792,7 @@
     "score": 4.5,
     "category": "面食",
     "address": "胜利东路附近",
+    "opentime": "-",
     "tags": [
       "面食",
       "单县特色",
@@ -1696,6 +1808,7 @@
     "score": 4.5,
     "category": "面食",
     "address": "-",
+    "opentime": "-",
     "tags": [
       "飞跃物流园"
     ]
@@ -1709,6 +1822,7 @@
     "score": 4.7,
     "category": "烧烤",
     "address": "湘江路与青岛路交叉口南288米路西",
+    "opentime": "-",
     "tags": [
       "烧烤",
       "曹县特色",
@@ -1724,6 +1838,7 @@
     "score": 4.6,
     "category": "烧烤",
     "address": "长江路与青岛路交叉口西北角门朝南",
+    "opentime": "-",
     "tags": [
       "烧烤",
       "曹县特色",
@@ -1739,6 +1854,7 @@
     "score": 4.6,
     "category": "正餐",
     "address": "-",
+    "opentime": "-",
     "tags": [
       "环岛花园东南门10米"
     ]
@@ -1752,6 +1868,7 @@
     "score": 4.6,
     "category": "正餐",
     "address": "锦呈花园西区",
+    "opentime": "-",
     "tags": [
       "聚餐",
       "曹县特色",
@@ -1767,6 +1884,7 @@
     "score": 4.6,
     "category": "正餐",
     "address": "曹城街道青菏路与湘江路交叉口万基广场东南角一层",
+    "opentime": "-",
     "tags": [
       "聚餐",
       "曹县特色",
@@ -1782,6 +1900,7 @@
     "score": 4.6,
     "category": "凉菜",
     "address": "曹城街道钱塘江中路中段路南金霸电器商场1层入口左侧",
+    "opentime": "-",
     "tags": [
       "凉菜",
       "曹县特色",
@@ -1797,6 +1916,7 @@
     "score": 4.6,
     "category": "正餐",
     "address": "五台山路与文化路路东南角5001号",
+    "opentime": "-",
     "tags": [
       "聚餐",
       "曹县特色",
@@ -1812,6 +1932,7 @@
     "score": 4.6,
     "category": "正餐",
     "address": "-",
+    "opentime": "-",
     "tags": [
       "亿联世家北门东140米"
     ]
@@ -1825,6 +1946,7 @@
     "score": 4.6,
     "category": "汤类",
     "address": "磐石街道泰山路五金城A13-12",
+    "opentime": "-",
     "tags": [
       "汤品",
       "鱼类",
@@ -1841,6 +1963,7 @@
     "score": 4.6,
     "category": "甜品",
     "address": "清江路康地君佳2013-1-107",
+    "opentime": "-",
     "tags": [
       "甜品",
       "曹县特色",
@@ -1856,6 +1979,7 @@
     "score": 4.5,
     "category": "烧烤",
     "address": "清荷路大润发北万基小区38-102号商铺",
+    "opentime": "-",
     "tags": [
       "烧烤",
       "曹县特色",
@@ -1871,6 +1995,7 @@
     "score": 4.5,
     "category": "烧烤",
     "address": "中央华府北门东800米路南谷雨碳火烤肉",
+    "opentime": "-",
     "tags": [
       "烧烤",
       "曹县特色",
@@ -1886,6 +2011,7 @@
     "score": 4.5,
     "category": "烧烤",
     "address": "青菏路与湘江路路口东北角",
+    "opentime": "-",
     "tags": [
       "烧烤",
       "曹县特色",
@@ -1901,6 +2027,7 @@
     "score": 4.5,
     "category": "面食",
     "address": "马金凤大戏楼东88米路北",
+    "opentime": "-",
     "tags": [
       "面食",
       "曹县特色",
@@ -1916,6 +2043,7 @@
     "score": 4.5,
     "category": "面食",
     "address": "-",
+    "opentime": "-",
     "tags": [
       "亿联世家北门东130米"
     ]
@@ -1929,6 +2057,7 @@
     "score": 4.5,
     "category": "烧烤",
     "address": "-",
+    "opentime": "-",
     "tags": [
       "亿联世家"
     ]
@@ -1942,6 +2071,7 @@
     "score": 4.5,
     "category": "烧烤",
     "address": "青岛路中段路东(喜地城东门南288米)",
+    "opentime": "-",
     "tags": [
       "烧烤",
       "曹县特色",
@@ -1957,6 +2087,7 @@
     "score": 4.5,
     "category": "正餐",
     "address": "东关街钱塘江路凤凰城12-1-112号",
+    "opentime": "-",
     "tags": [
       "聚餐",
       "鱼类",
@@ -1973,6 +2104,7 @@
     "score": 4.5,
     "category": "正餐",
     "address": "青菏街道办事处北邵村府东城北区32-1-103、104号",
+    "opentime": "-",
     "tags": [
       "聚餐",
       "曹县特色",
@@ -1988,6 +2120,7 @@
     "score": 4.5,
     "category": "正餐",
     "address": "青菏南路58号",
+    "opentime": "-",
     "tags": [
       "聚餐",
       "曹县特色",
@@ -2003,6 +2136,7 @@
     "score": 4.5,
     "category": "正餐",
     "address": "鑫园小区西南门东50米",
+    "opentime": "-",
     "tags": [
       "聚餐",
       "海鲜",
@@ -2019,6 +2153,7 @@
     "score": 4.5,
     "category": "正餐",
     "address": "水岸城邦西区东南门旁",
+    "opentime": "-",
     "tags": [
       "聚餐",
       "曹县特色",
@@ -2034,6 +2169,7 @@
     "score": 4.5,
     "category": "正餐",
     "address": "御景天下C区北门西110米",
+    "opentime": "-",
     "tags": [
       "聚餐",
       "曹县特色",
@@ -2049,6 +2185,7 @@
     "score": 4.5,
     "category": "面食",
     "address": "钱塘江路27号",
+    "opentime": "-",
     "tags": [
       "面食",
       "曹县特色",
@@ -2064,6 +2201,7 @@
     "score": 4.5,
     "category": "正餐",
     "address": "西环路南段和谐家园对面",
+    "opentime": "-",
     "tags": [
       "聚餐",
       "曹县特色",
@@ -2079,6 +2217,7 @@
     "score": 4.6,
     "category": "正餐",
     "address": "郓州街道经济开发区金河路东段大福源购物广场4F-11号",
+    "opentime": "-",
     "tags": [
       "聚餐",
       "郓城特色",
@@ -2094,6 +2233,7 @@
     "score": 4.6,
     "category": "烧烤",
     "address": "-",
+    "opentime": "-",
     "tags": []
   },
   {
@@ -2105,6 +2245,7 @@
     "score": 4.6,
     "category": "烧烤",
     "address": "郓州街道胜利东街北段路东11号(胜利东巷北段路东)",
+    "opentime": "-",
     "tags": [
       "烧烤",
       "郓城特色",
@@ -2120,6 +2261,7 @@
     "score": 4.6,
     "category": "正餐",
     "address": "宋河金街15栋-1-101",
+    "opentime": "-",
     "tags": [
       "聚餐",
       "郓城特色",
@@ -2135,6 +2277,7 @@
     "score": 4.6,
     "category": "正餐",
     "address": "东门街与盛平路交叉口北160米",
+    "opentime": "-",
     "tags": [
       "聚餐",
       "鸡肉",
@@ -2151,6 +2294,7 @@
     "score": 4.6,
     "category": "饮品",
     "address": "郓州一号南区",
+    "opentime": "-",
     "tags": [
       "饮品",
       "郓城特色",
@@ -2166,6 +2310,7 @@
     "score": 4.6,
     "category": "正餐",
     "address": "-",
+    "opentime": "-",
     "tags": [
       "星河国际东南门南60米"
     ]
@@ -2179,6 +2324,7 @@
     "score": 4.6,
     "category": "正餐",
     "address": "公明路崛起广场西临新武装部北88米路西",
+    "opentime": "-",
     "tags": [
       "聚餐",
       "郓城特色",
@@ -2194,6 +2340,7 @@
     "score": 4.5,
     "category": "正餐",
     "address": "郓州街道凤凰城C区西门往北88米路东",
+    "opentime": "-",
     "tags": [
       "聚餐",
       "郓城特色",
@@ -2209,6 +2356,7 @@
     "score": 4.5,
     "category": "正餐",
     "address": "郓州街道宋河金街15幢1单元",
+    "opentime": "-",
     "tags": [
       "聚餐",
       "郓城特色",
@@ -2224,6 +2372,7 @@
     "score": 4.5,
     "category": "正餐",
     "address": "宋河金街15号楼1单元105-108",
+    "opentime": "-",
     "tags": [
       "聚餐",
       "郓城特色",
@@ -2239,6 +2388,7 @@
     "score": 4.5,
     "category": "正餐",
     "address": "-",
+    "opentime": "-",
     "tags": [
       "世纪华府东1门旁"
     ]
@@ -2252,6 +2402,7 @@
     "score": 4.5,
     "category": "烧烤",
     "address": "五道街与忠义路交叉口南80米",
+    "opentime": "-",
     "tags": [
       "烧烤",
       "郓城特色",
@@ -2267,6 +2418,7 @@
     "score": 4.5,
     "category": "正餐",
     "address": "五道街金河一号13-2-106",
+    "opentime": "-",
     "tags": [
       "聚餐",
       "鸡肉",
@@ -2283,6 +2435,7 @@
     "score": 4.5,
     "category": "正餐",
     "address": "金河路东段236号(东方明珠大酒店)正南方向170米",
+    "opentime": "-",
     "tags": [
       "聚餐",
       "郓城特色",
@@ -2298,6 +2451,7 @@
     "score": 4.5,
     "category": "正餐",
     "address": "-",
+    "opentime": "-",
     "tags": [
       "中央首府西门北行150米3-2-101-102铺"
     ]
@@ -2311,6 +2465,7 @@
     "score": 4.5,
     "category": "烧烤",
     "address": "郓州街道中华名苑12-1-104号商铺",
+    "opentime": "-",
     "tags": [
       "烧烤",
       "郓城特色",
@@ -2326,6 +2481,7 @@
     "score": 4.5,
     "category": "正餐",
     "address": "郓州街道南湖新城3号-1-107蹲、108、110、112、114号商铺",
+    "opentime": "-",
     "tags": [
       "聚餐",
       "郓城特色",
@@ -2341,6 +2497,7 @@
     "score": 4.5,
     "category": "烧烤",
     "address": "郓州街道东门街与水浒路交叉路口南188米路西",
+    "opentime": "-",
     "tags": [
       "烧烤",
       "郓城特色",
@@ -2356,6 +2513,7 @@
     "score": 4.5,
     "category": "烧烤",
     "address": "东门街中段工商银行南50米路东",
+    "opentime": "-",
     "tags": [
       "烧烤",
       "郓城特色",
@@ -2371,6 +2529,7 @@
     "score": 4.5,
     "category": "烧烤",
     "address": "-",
+    "opentime": "-",
     "tags": [
       "鹏瑞金河1号东南门北130米"
     ]
@@ -2384,6 +2543,7 @@
     "score": 4.5,
     "category": "烧烤",
     "address": "东门街工商银行南50米路东",
+    "opentime": "-",
     "tags": [
       "烧烤",
       "郓城特色",
@@ -2399,6 +2559,7 @@
     "score": 4.5,
     "category": "烧烤",
     "address": "御和苑南区南门往西50米路北",
+    "opentime": "-",
     "tags": [
       "烧烤",
       "郓城特色",
@@ -2414,6 +2575,7 @@
     "score": 4.5,
     "category": "面食",
     "address": "郓州街道跃进南路帝景湾小区11号楼1单元1-116号",
+    "opentime": "-",
     "tags": [
       "面食",
       "郓城特色",
@@ -2429,6 +2591,7 @@
     "score": 4.5,
     "category": "正餐",
     "address": "郓州街道中央学府小区D区7-1-118商铺",
+    "opentime": "-",
     "tags": [
       "聚餐",
       "郓城特色",
@@ -2444,6 +2607,7 @@
     "score": 4.7,
     "category": "汤类",
     "address": "凤凰街道古城路罐子汤瑞和家园店",
+    "opentime": "-",
     "tags": [
       "汤品",
       "巨野特色",
@@ -2459,6 +2623,7 @@
     "score": 4.6,
     "category": "正餐",
     "address": "招商街凯旋新城西区麟珑美食街9号103,9号104号",
+    "opentime": "-",
     "tags": [
       "聚餐",
       "巨野特色",
@@ -2474,6 +2639,7 @@
     "score": 4.6,
     "category": "正餐",
     "address": "凤凰街道办事处光明路中段路东帝都花园28号商铺",
+    "opentime": "-",
     "tags": [
       "聚餐",
       "鱼类",
@@ -2490,6 +2656,7 @@
     "score": 4.6,
     "category": "汤类",
     "address": "北园路金麒麟小区斜对过",
+    "opentime": "-",
     "tags": [
       "汤品",
       "巨野特色",
@@ -2505,6 +2672,7 @@
     "score": 4.6,
     "category": "汤类",
     "address": "张徐新区西南门旁",
+    "opentime": "-",
     "tags": [
       "汤品",
       "鸡肉",
@@ -2521,6 +2689,7 @@
     "score": 4.6,
     "category": "正餐",
     "address": "麒麟大道与光明路交叉口的建筑物天悦国际广场、人民路文化路交叉口的佳和时代广场",
+    "opentime": "-",
     "tags": [
       "聚餐",
       "巨野特色",
@@ -2536,6 +2705,7 @@
     "score": 4.6,
     "category": "汤类",
     "address": "-",
+    "opentime": "-",
     "tags": [
       "银座购物广场东门"
     ]
@@ -2549,6 +2719,7 @@
     "score": 4.6,
     "category": "正餐",
     "address": "-",
+    "opentime": "-",
     "tags": [
       "佳和购物广场中心店6号门旁"
     ]
@@ -2562,6 +2733,7 @@
     "score": 4.6,
     "category": "正餐",
     "address": "永丰街道麒麟大道47号佳和购物广场1层W1003号",
+    "opentime": "-",
     "tags": [
       "聚餐",
       "巨野特色",
@@ -2577,6 +2749,7 @@
     "score": 4.6,
     "category": "饮品",
     "address": "凤凰街道办事处甘棠路中段路东蓝博湾D区149号商铺",
+    "opentime": "-",
     "tags": [
       "饮品",
       "巨野特色",
@@ -2592,6 +2765,7 @@
     "score": 4.5,
     "category": "正餐",
     "address": "佳和中心店西侧红绿灯向北五十米路西",
+    "opentime": "-",
     "tags": [
       "聚餐",
       "牛肉",
@@ -2608,6 +2782,7 @@
     "score": 4.5,
     "category": "正餐",
     "address": "东方新天地B区南门西100米",
+    "opentime": "-",
     "tags": [
       "聚餐",
       "巨野特色",
@@ -2623,6 +2798,7 @@
     "score": 4.5,
     "category": "汤类",
     "address": "麒麟大道与甘棠路交叉口西50米",
+    "opentime": "-",
     "tags": [
       "汤品",
       "巨野特色",
@@ -2638,6 +2814,7 @@
     "score": 4.5,
     "category": "正餐",
     "address": "永丰街道办事处健康路西段路南麟珑金街15号楼105号商铺",
+    "opentime": "-",
     "tags": [
       "聚餐",
       "牛肉",
@@ -2654,6 +2831,7 @@
     "score": 4.5,
     "category": "烧烤",
     "address": "凤凰街道招商街1111号",
+    "opentime": "-",
     "tags": [
       "烧烤",
       "巨野特色",
@@ -2669,6 +2847,7 @@
     "score": 4.5,
     "category": "烧烤",
     "address": "古城西路与甘棠路交汇处天茂锦城小区西南角",
+    "opentime": "-",
     "tags": [
       "烧烤",
       "巨野特色",
@@ -2684,6 +2863,7 @@
     "score": 4.5,
     "category": "烧烤",
     "address": "-",
+    "opentime": "-",
     "tags": [
       "镜湖水岸东1门北80米"
     ]
@@ -2697,6 +2877,7 @@
     "score": 4.5,
     "category": "烧烤",
     "address": "凯旋新城十字路口北20米",
+    "opentime": "-",
     "tags": [
       "烧烤",
       "巨野特色",
@@ -2712,6 +2893,7 @@
     "score": 4.5,
     "category": "汤类",
     "address": "-",
+    "opentime": "-",
     "tags": [
       "河畔花都"
     ]
@@ -2725,6 +2907,7 @@
     "score": 4.5,
     "category": "汤类",
     "address": "文昌路1666号",
+    "opentime": "-",
     "tags": [
       "汤品",
       "巨野特色",
@@ -2740,6 +2923,7 @@
     "score": 4.5,
     "category": "正餐",
     "address": "-",
+    "opentime": "-",
     "tags": [
       "府前一品东门北140米"
     ]
@@ -2753,6 +2937,7 @@
     "score": 4.5,
     "category": "正餐",
     "address": "-",
+    "opentime": "-",
     "tags": [
       "麒麟大道2766号"
     ]
@@ -2766,6 +2951,7 @@
     "score": 4.5,
     "category": "正餐",
     "address": "佳和美食街",
+    "opentime": "-",
     "tags": [
       "聚餐",
       "巨野特色",
@@ -2781,6 +2967,7 @@
     "score": 4.5,
     "category": "正餐",
     "address": "金山路西客运站南邻",
+    "opentime": "-",
     "tags": [
       "聚餐",
       "巨野特色",
@@ -2796,6 +2983,7 @@
     "score": 4.5,
     "category": "正餐",
     "address": "-",
+    "opentime": "-",
     "tags": [
       "东方新天地b-1-106b-1-107"
     ]
@@ -2809,6 +2997,7 @@
     "score": 4.6,
     "category": "正餐",
     "address": "沿河路47号",
+    "opentime": "-",
     "tags": [
       "聚餐",
       "东明特色",
@@ -2824,6 +3013,7 @@
     "score": 4.6,
     "category": "正餐",
     "address": "-",
+    "opentime": "-",
     "tags": [
       "丰海御龙湾26幢2单元01007室"
     ]
@@ -2837,6 +3027,7 @@
     "score": 4.6,
     "category": "正餐",
     "address": "五四路与南华路交叉口西100米",
+    "opentime": "-",
     "tags": [
       "聚餐",
       "东明特色",
@@ -2852,6 +3043,7 @@
     "score": 4.6,
     "category": "饮品",
     "address": "-",
+    "opentime": "-",
     "tags": [
       "文庭雅苑西北门旁"
     ]
@@ -2865,6 +3057,7 @@
     "score": 4.5,
     "category": "正餐",
     "address": "南华路南段万福名苑小区008号",
+    "opentime": "-",
     "tags": [
       "聚餐",
       "牛肉",
@@ -2881,6 +3074,7 @@
     "score": 4.5,
     "category": "正餐",
     "address": "曙光路与黄河路交汇处都市怡景齐祺渔锅",
+    "opentime": "-",
     "tags": [
       "聚餐",
       "东明特色",
@@ -2896,6 +3090,7 @@
     "score": 4.5,
     "category": "正餐",
     "address": "-",
+    "opentime": "-",
     "tags": [
       "龙脉御府二期"
     ]
@@ -2909,6 +3104,7 @@
     "score": 4.5,
     "category": "烧烤",
     "address": "-",
+    "opentime": "-",
     "tags": [
       "明丰壹号公馆东大门北130米"
     ]
@@ -2922,6 +3118,7 @@
     "score": 4.5,
     "category": "面食",
     "address": "五四路东段南侧东方世纪城3号楼2号",
+    "opentime": "-",
     "tags": [
       "面食",
       "东明特色",
@@ -2937,6 +3134,7 @@
     "score": 4.5,
     "category": "汤类",
     "address": "-",
+    "opentime": "-",
     "tags": [
       "大洋府邸西门10米"
     ]
@@ -2950,6 +3148,7 @@
     "score": 4.5,
     "category": "面食",
     "address": "五四路103号",
+    "opentime": "-",
     "tags": [
       "面食",
       "东明特色",
@@ -2965,6 +3164,7 @@
     "score": 4.5,
     "category": "正餐",
     "address": "五四路中段汇够广场L1层",
+    "opentime": "-",
     "tags": [
       "聚餐",
       "东明特色",
@@ -2980,6 +3180,7 @@
     "score": 4.5,
     "category": "汤类",
     "address": "-",
+    "opentime": "-",
     "tags": [
       "第七实验小学对过东50米"
     ]
@@ -2993,6 +3194,7 @@
     "score": 4.5,
     "category": "正餐",
     "address": "民主西街12-1号",
+    "opentime": "-",
     "tags": [
       "聚餐",
       "东明特色",
@@ -3008,6 +3210,7 @@
     "score": 4.5,
     "category": "正餐",
     "address": "解放路壹号公馆B区犇羴鱻饭店",
+    "opentime": "-",
     "tags": [
       "聚餐",
       "东明特色",
@@ -3023,6 +3226,7 @@
     "score": 4.5,
     "category": "甜品",
     "address": "城关街道黄河明珠小区0005幢1单元1层01006号",
+    "opentime": "-",
     "tags": [
       "甜品",
       "东明特色",
@@ -3038,6 +3242,7 @@
     "score": 4.5,
     "category": "面食",
     "address": "光明路丰海御龙湾西区7-11号",
+    "opentime": "-",
     "tags": [
       "面食",
       "东明特色",
@@ -3053,6 +3258,7 @@
     "score": 4.4,
     "category": "正餐",
     "address": "-",
+    "opentime": "-",
     "tags": []
   },
   {
@@ -3064,6 +3270,7 @@
     "score": 4.4,
     "category": "正餐",
     "address": "南华路附近",
+    "opentime": "-",
     "tags": [
       "聚餐",
       "东明特色",
@@ -3079,6 +3286,7 @@
     "score": 4.4,
     "category": "正餐",
     "address": "三八路实验中学东200米",
+    "opentime": "-",
     "tags": [
       "聚餐",
       "东明特色",
@@ -3094,6 +3302,7 @@
     "score": 4.4,
     "category": "正餐",
     "address": "南华路29号",
+    "opentime": "-",
     "tags": [
       "聚餐",
       "东明特色",
@@ -3109,6 +3318,7 @@
     "score": 4.4,
     "category": "烧烤",
     "address": "工业路3号",
+    "opentime": "-",
     "tags": [
       "烧烤",
       "东明特色",
@@ -3124,6 +3334,7 @@
     "score": 4.4,
     "category": "烧烤",
     "address": "工业路南段东侧龙泉雅园0005-2-01004号",
+    "opentime": "-",
     "tags": [
       "烧烤",
       "东明特色",
@@ -3139,6 +3350,7 @@
     "score": 4.4,
     "category": "烧烤",
     "address": "文化路与吴庄路交叉口路东一百米合美超市旁边",
+    "opentime": "-",
     "tags": [
       "烧烤",
       "东明特色",
@@ -3154,6 +3366,7 @@
     "score": 4.4,
     "category": "烧烤",
     "address": "西关店子村中段路南",
+    "opentime": "-",
     "tags": [
       "烧烤",
       "东明特色",
@@ -3169,6 +3382,7 @@
     "score": 4.6,
     "category": "正餐",
     "address": "-",
+    "opentime": "-",
     "tags": [
       "博文华府东门旁"
     ]
@@ -3182,6 +3396,7 @@
     "score": 4.6,
     "category": "正餐",
     "address": "-",
+    "opentime": "-",
     "tags": [
       "欧亚半岛东门旁"
     ]
@@ -3195,6 +3410,7 @@
     "score": 4.6,
     "category": "正餐",
     "address": "范阳路汽车小镇东门院内",
+    "opentime": "-",
     "tags": [
       "聚餐",
       "定陶特色",
@@ -3210,6 +3426,7 @@
     "score": 4.6,
     "category": "面食",
     "address": "黄店镇兴黄路附近",
+    "opentime": "-",
     "tags": [
       "面食",
       "定陶特色",
@@ -3225,6 +3442,7 @@
     "score": 4.6,
     "category": "正餐",
     "address": "滨河街道复兴大道陶都新韵北区西区",
+    "opentime": "-",
     "tags": [
       "聚餐",
       "定陶特色",
@@ -3240,6 +3458,7 @@
     "score": 4.6,
     "category": "正餐",
     "address": "陈集镇沙海定胡路中段",
+    "opentime": "-",
     "tags": [
       "聚餐",
       "定陶特色",
@@ -3255,6 +3474,7 @@
     "score": 4.6,
     "category": "正餐",
     "address": "青年路与崇文路交汇汇星悦城1001号",
+    "opentime": "-",
     "tags": [
       "聚餐",
       "定陶特色",
@@ -3270,6 +3490,7 @@
     "score": 4.6,
     "category": "正餐",
     "address": "杜堂镇汽车小镇上海路与沐春西路交叉路口东",
+    "opentime": "-",
     "tags": [
       "聚餐",
       "鸡肉",
@@ -3286,6 +3507,7 @@
     "score": 4.5,
     "category": "正餐",
     "address": "陶驿路与滨河路交叉口向西50米路北",
+    "opentime": "-",
     "tags": [
       "聚餐",
       "定陶特色",
@@ -3301,6 +3523,7 @@
     "score": 4.5,
     "category": "正餐",
     "address": "济阴路中段与和平街交口往东100米路南",
+    "opentime": "-",
     "tags": [
       "聚餐",
       "定陶特色",
@@ -3316,6 +3539,7 @@
     "score": 4.5,
     "category": "烧烤",
     "address": "镜湖路17号",
+    "opentime": "-",
     "tags": [
       "烧烤",
       "定陶特色",
@@ -3331,6 +3555,7 @@
     "score": 4.5,
     "category": "烧烤",
     "address": "陶驿路与古塔路交叉口北160米",
+    "opentime": "-",
     "tags": [
       "烧烤",
       "定陶特色",
@@ -3346,6 +3571,7 @@
     "score": 4.5,
     "category": "正餐",
     "address": "维也纳小区1北门104商铺",
+    "opentime": "-",
     "tags": [
       "聚餐",
       "定陶特色",
@@ -3361,6 +3587,7 @@
     "score": 4.5,
     "category": "正餐",
     "address": "-",
+    "opentime": "-",
     "tags": [
       "陶都府苑"
     ]
@@ -3374,6 +3601,7 @@
     "score": 4.5,
     "category": "正餐",
     "address": "-",
+    "opentime": "-",
     "tags": [
       "塔刘新村南门旁"
     ]
@@ -3387,6 +3615,7 @@
     "score": 4.5,
     "category": "汤类",
     "address": "-",
+    "opentime": "-",
     "tags": [
       "文鼎苑北门西90米"
     ]
@@ -3400,6 +3629,7 @@
     "score": 4.5,
     "category": "面食",
     "address": "黄店镇兴黄路红绿灯路口西20米路南",
+    "opentime": "-",
     "tags": [
       "面食",
       "定陶特色",
@@ -3415,6 +3645,7 @@
     "score": 4.5,
     "category": "面食",
     "address": "崇文路董河嘉园南门西30米",
+    "opentime": "-",
     "tags": [
       "面食",
       "定陶特色",
@@ -3430,6 +3661,7 @@
     "score": 4.5,
     "category": "正餐",
     "address": "西苑小区东北门东50米",
+    "opentime": "-",
     "tags": [
       "聚餐",
       "定陶特色",
@@ -3445,6 +3677,7 @@
     "score": 4.5,
     "category": "饮品",
     "address": "金茂街北段路东120号",
+    "opentime": "-",
     "tags": [
       "饮品",
       "定陶特色",
@@ -3460,6 +3693,7 @@
     "score": 4.5,
     "category": "饮品",
     "address": "青年路与崇文路交汇处和美星悦城B-13号铺",
+    "opentime": "-",
     "tags": [
       "饮品",
       "定陶特色",
@@ -3475,6 +3709,7 @@
     "score": 4.5,
     "category": "饮品",
     "address": "-",
+    "opentime": "-",
     "tags": [
       "镜湖壹号二期2-106",
       "2-107商铺"
@@ -3489,6 +3724,7 @@
     "score": 4.5,
     "category": "正餐",
     "address": "陶驿路林业局",
+    "opentime": "-",
     "tags": [
       "聚餐",
       "鸡肉",
@@ -3506,6 +3742,7 @@
     "score": 4.5,
     "category": "汤类",
     "address": "白土山路与陶城路交叉口北120米",
+    "opentime": "-",
     "tags": [
       "汤品",
       "羊肉",
@@ -3522,6 +3759,7 @@
     "score": 4.4,
     "category": "正餐",
     "address": "-",
+    "opentime": "-",
     "tags": [
       "259省道滨河鑫城西门"
     ]
@@ -3535,6 +3773,7 @@
     "score": 4.6,
     "category": "正餐",
     "address": "-",
+    "opentime": "-",
     "tags": [
       "凤凰财富广场西南门东60米"
     ]
@@ -3548,6 +3787,7 @@
     "score": 4.6,
     "category": "正餐",
     "address": "-",
+    "opentime": "-",
     "tags": [
       "嘉禾佳园东门东北100米"
     ]
@@ -3561,6 +3801,7 @@
     "score": 4.6,
     "category": "正餐",
     "address": "文亭街与汉泉路交叉口东北80米",
+    "opentime": "-",
     "tags": [
       "聚餐",
       "成武特色",
@@ -3576,6 +3817,7 @@
     "score": 4.6,
     "category": "饮品",
     "address": "永顺路中段路西14-170号",
+    "opentime": "-",
     "tags": [
       "饮品",
       "成武特色",
@@ -3591,6 +3833,7 @@
     "score": 4.6,
     "category": "饮品",
     "address": "成武县人民政府南门旁",
+    "opentime": "-",
     "tags": [
       "饮品",
       "成武特色",
@@ -3606,6 +3849,7 @@
     "score": 4.5,
     "category": "正餐",
     "address": "古城东街与通乐路交叉口东南50米",
+    "opentime": "-",
     "tags": [
       "聚餐",
       "成武特色",
@@ -3621,6 +3865,7 @@
     "score": 4.5,
     "category": "烧烤",
     "address": "文亭街道办事处文亭街与汉泉路交叉口西北80米翡翠城B区4号楼沿街",
+    "opentime": "-",
     "tags": [
       "烧烤",
       "成武特色",
@@ -3636,6 +3881,7 @@
     "score": 4.5,
     "category": "烧烤",
     "address": "成武县民政局老年公寓东",
+    "opentime": "-",
     "tags": [
       "烧烤",
       "成武特色",
@@ -3651,6 +3897,7 @@
     "score": 4.5,
     "category": "烧烤",
     "address": "-",
+    "opentime": "-",
     "tags": [
       "文亭湖一号秋月居B-215.16"
     ]
@@ -3664,6 +3911,7 @@
     "score": 4.5,
     "category": "正餐",
     "address": "御景华府西区南门东南80米",
+    "opentime": "-",
     "tags": [
       "聚餐",
       "成武特色",
@@ -3679,6 +3927,7 @@
     "score": 4.5,
     "category": "正餐",
     "address": "伯乐大街800号",
+    "opentime": "-",
     "tags": [
       "聚餐",
       "成武特色",
@@ -3694,6 +3943,7 @@
     "score": 4.5,
     "category": "正餐",
     "address": "-",
+    "opentime": "-",
     "tags": [
       "奔马广场中心东"
     ]
@@ -3707,6 +3957,7 @@
     "score": 4.5,
     "category": "正餐",
     "address": "-",
+    "opentime": "-",
     "tags": [
       "郜城第四实验小学对过"
     ]
@@ -3720,6 +3971,7 @@
     "score": 4.5,
     "category": "正餐",
     "address": "黄岗镇汉泉路18号",
+    "opentime": "-",
     "tags": [
       "聚餐",
       "成武特色",
@@ -3735,6 +3987,7 @@
     "score": 4.5,
     "category": "汤类",
     "address": "文亭街道先农坛街汽车站西100米路北",
+    "opentime": "-",
     "tags": [
       "汤品",
       "羊肉",
@@ -3751,6 +4004,7 @@
     "score": 4.5,
     "category": "汤类",
     "address": "趵突泉路与永昌路交叉口东320米",
+    "opentime": "-",
     "tags": [
       "汤品",
       "羊肉",
@@ -3767,6 +4021,7 @@
     "score": 4.5,
     "category": "正餐",
     "address": "文亭街道千里马路002号",
+    "opentime": "-",
     "tags": [
       "聚餐",
       "成武特色",
@@ -3782,6 +4037,7 @@
     "score": 4.5,
     "category": "汤类",
     "address": "文亭街与寿峰路交叉口北晟裕未来城二期东门北邻(S18-8)",
+    "opentime": "-",
     "tags": [
       "汤品",
       "羊肉",
@@ -3798,6 +4054,7 @@
     "score": 4.5,
     "category": "正餐",
     "address": "滨湖大道与湖心路交叉口西120米",
+    "opentime": "-",
     "tags": [
       "聚餐",
       "成武特色",
@@ -3813,6 +4070,7 @@
     "score": 4.5,
     "category": "正餐",
     "address": "永昌街道北部城区郜城水街三地块3-4-14、3-4-15",
+    "opentime": "-",
     "tags": [
       "聚餐",
       "成武特色",
@@ -3828,6 +4086,7 @@
     "score": 4.5,
     "category": "正餐",
     "address": "永昌街道通乐路西侧郜城水街时代广场5-10号11号-24号商铺",
+    "opentime": "-",
     "tags": [
       "聚餐",
       "成武特色",
@@ -3843,6 +4102,7 @@
     "score": 4.5,
     "category": "正餐",
     "address": "永昌路紫荆花园小区东门北",
+    "opentime": "-",
     "tags": [
       "聚餐",
       "成武特色",
@@ -3858,6 +4118,7 @@
     "score": 4.4,
     "category": "正餐",
     "address": "文亭街道办事处聚龙湾26-18号",
+    "opentime": "-",
     "tags": [
       "聚餐",
       "成武特色",
@@ -3873,6 +4134,7 @@
     "score": 4.4,
     "category": "正餐",
     "address": "文亭街与永顺路交汇处翡翠城商业8号楼8-120号",
+    "opentime": "-",
     "tags": [
       "聚餐",
       "成武特色",
@@ -3888,6 +4150,7 @@
     "score": 4.4,
     "category": "正餐",
     "address": "聚龙湾北区南3门东80米",
+    "opentime": "-",
     "tags": [
       "聚餐",
       "成武特色",
@@ -3903,6 +4166,7 @@
     "score": 4.6,
     "category": "正餐",
     "address": "陈王街道办事处舜耕商贸城E区12号商业楼1层",
+    "opentime": "-",
     "tags": [
       "聚餐",
       "鄄城特色",
@@ -3918,6 +4182,7 @@
     "score": 4.6,
     "category": "汤类",
     "address": "孙膑路与淮河路南300米路西",
+    "opentime": "-",
     "tags": [
       "汤品",
       "羊肉",
@@ -3934,6 +4199,7 @@
     "score": 4.6,
     "category": "饮品",
     "address": "-",
+    "opentime": "-",
     "tags": [
       "舜耕国际商贸城E012栋0019商铺luckincoffee瑞幸咖啡(鄄城梦想城店)"
     ]
@@ -3947,6 +4213,7 @@
     "score": 4.5,
     "category": "烧烤",
     "address": "-",
+    "opentime": "-",
     "tags": [
       "家和购物广场101层商铺"
     ]
@@ -3960,6 +4227,7 @@
     "score": 4.5,
     "category": "烧烤",
     "address": "陈王街道建设街与舜耕路交叉口向西50米",
+    "opentime": "-",
     "tags": [
       "烧烤",
       "鄄城特色",
@@ -3975,6 +4243,7 @@
     "score": 4.5,
     "category": "正餐",
     "address": "陈王街道黄河路中段富邦国风25号楼101-105号",
+    "opentime": "-",
     "tags": [
       "聚餐",
       "鄄城特色",
@@ -3990,6 +4259,7 @@
     "score": 4.5,
     "category": "正餐",
     "address": "-",
+    "opentime": "-",
     "tags": [
       "中央华府东1门南50米"
     ]
@@ -4003,6 +4273,7 @@
     "score": 4.5,
     "category": "正餐",
     "address": "240国道与人民路交汇处北200米路西三和纺织东",
+    "opentime": "-",
     "tags": [
       "聚餐",
       "鄄城特色",
@@ -4018,6 +4289,7 @@
     "score": 4.5,
     "category": "正餐",
     "address": "-",
+    "opentime": "-",
     "tags": [
       "舜耕商贸城南门"
     ]
@@ -4031,6 +4303,7 @@
     "score": 4.5,
     "category": "汤类",
     "address": "孙膑路与建设街交叉口西南80米",
+    "opentime": "-",
     "tags": [
       "汤品",
       "鄄城特色",
@@ -4046,6 +4319,7 @@
     "score": 4.5,
     "category": "正餐",
     "address": "人民街与禹王路交叉口西南角鄄城茂都购物广场一层",
+    "opentime": "-",
     "tags": [
       "聚餐",
       "鄄城特色",
@@ -4061,6 +4335,7 @@
     "score": 4.5,
     "category": "正餐",
     "address": "陈王街道办事处舜王府商铺A105-101-106",
+    "opentime": "-",
     "tags": [
       "聚餐",
       "鄄城特色",
@@ -4076,6 +4351,7 @@
     "score": 4.5,
     "category": "汤类",
     "address": "-",
+    "opentime": "-",
     "tags": [
       "富春乡富春行政村"
     ]
@@ -4089,6 +4365,7 @@
     "score": 4.5,
     "category": "汤类",
     "address": "-",
+    "opentime": "-",
     "tags": [
       "S327千禧园"
     ]
@@ -4102,6 +4379,7 @@
     "score": 4.5,
     "category": "面食",
     "address": "淮河街1133号",
+    "opentime": "-",
     "tags": [
       "面食",
       "鄄城特色",
@@ -4117,6 +4395,7 @@
     "score": 4.5,
     "category": "汤类",
     "address": "富邦舜王府东区北门西260米",
+    "opentime": "-",
     "tags": [
       "汤品",
       "鄄城特色",
@@ -4132,6 +4411,7 @@
     "score": 4.5,
     "category": "面食",
     "address": "二路青年路南300米路西",
+    "opentime": "-",
     "tags": [
       "面食",
       "鄄城特色",
@@ -4147,6 +4427,7 @@
     "score": 4.5,
     "category": "正餐",
     "address": "富邦·舜王府A区西门北150米",
+    "opentime": "-",
     "tags": [
       "聚餐",
       "鄄城特色",
@@ -4162,6 +4443,7 @@
     "score": 4.5,
     "category": "正餐",
     "address": "舜耕路与建设路交叉路口向北88米路西舜耕美食广场3层",
+    "opentime": "-",
     "tags": [
       "聚餐",
       "鄄城特色",
@@ -4177,6 +4459,7 @@
     "score": 4.5,
     "category": "正餐",
     "address": "城濮街",
+    "opentime": "-",
     "tags": [
       "聚餐",
       "鄄城特色",
@@ -4192,6 +4475,7 @@
     "score": 4.5,
     "category": "甜品",
     "address": "古泉街道尧王路与肖宁街交汇处往南30米路西",
+    "opentime": "-",
     "tags": [
       "甜品",
       "鄄城特色",
@@ -4207,6 +4491,7 @@
     "score": 4.4,
     "category": "烧烤",
     "address": "-",
+    "opentime": "-",
     "tags": [
       "秋章药材站西侧200米"
     ]
@@ -4220,6 +4505,7 @@
     "score": 4.4,
     "category": "烧烤",
     "address": "鄄二路与人民路交叉口东南角",
+    "opentime": "-",
     "tags": [
       "烧烤",
       "鄄城特色",
@@ -4235,6 +4521,7 @@
     "score": 4.4,
     "category": "烧烤",
     "address": "鄄一路与人民路交叉口向西20米路北",
+    "opentime": "-",
     "tags": [
       "烧烤",
       "鄄城特色",
@@ -4250,6 +4537,7 @@
     "score": 4.4,
     "category": "烧烤",
     "address": "古泉街道乐农菜篮子A区47号",
+    "opentime": "-",
     "tags": [
       "烧烤",
       "鄄城特色",
