@@ -1,0 +1,53 @@
+# 依赖
+node_modules/
+__pycache__/
+*.pyc
+*.pyo
+*.egg-info/
+dist/
+build/
+
+# 环境配置
+.env
+.env.local
+.env.*.local
+
+# IDE
+.idea/
+.vscode/
+*.swp
+*.swo
+
+# 系统文件
+.DS_Store
+Thumbs.db
+
+# 日志
+*.log
+logs/
+
+# 数据库
+*.sqlite3
+*.db
+
+# 上传文件
+uploads/
+temp/
+
+# 缓存
+.cache/
+.pytest_cache/
+
+# 编译文件
+*.o
+*.so
+*.dll
+
+# 虚拟环境
+venv/
+.venv/
+env/
+
+# 测试覆盖率
+htmlcov/
+.coverage

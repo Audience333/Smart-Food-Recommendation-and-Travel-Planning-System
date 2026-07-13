@@ -1,0 +1,6 @@
+# 高德地图 API 配置
+# 注意: 此文件用于数据采集阶段和地图显示
+
+AMAP_KEY=647bb3e7a596c479b998f3e20a5a486a
+BASE_URL=https://restapi.amap.com/v3
+CITY=菏泽
