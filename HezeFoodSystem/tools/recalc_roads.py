@@ -6,6 +6,9 @@
 import math
 import re
 import os
+import urllib.request
+import json
+import time
 
 def haversine(lon1, lat1, lon2, lat2):
     """计算两点间的球面距离（米）"""
@@ -49,9 +52,36 @@ def time_from_distance(dist_m, speed_kmh=40):
     """根据距离估算时间（分钟），默认市区车速40km/h"""
     return max(1, round(dist_m / (speed_kmh * 1000 / 60)))
 
+def amap_driving(key, origin_lng, origin_lat, dest_lng, dest_lat):
+    try:
+        url = (f"https://restapi.amap.com/v3/direction/driving?"
+               f"origin={origin_lng},{origin_lat}&destination={dest_lng},{dest_lat}"
+               f"&key={key}&strategy=0")
+        req = urllib.request.Request(url, headers={"User-Agent": "Mozilla/5.0"})
+        with urllib.request.urlopen(req, timeout=5) as resp:
+            data = json.loads(resp.read().decode("utf-8"))
+        if data.get("status") == "1" and data.get("route", {}).get("paths"):
+            path = data["route"]["paths"][0]
+            return int(path["distance"]), int(path["duration"]) // 60
+    except Exception:
+        pass
+    return None, None
+
 def main():
     base_dir = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
     data_dir = os.path.join(base_dir, 'data')
+
+    config = {}
+    config_path = os.path.join(base_dir, 'config', 'amap_config.txt')
+    if os.path.exists(config_path):
+        with open(config_path, 'r', encoding='utf-8') as cf:
+            for line in cf:
+                line = line.strip()
+                if not line or line.startswith("#"): continue
+                if "=" in line:
+                    k, v = line.split("=", 1)
+                    config[k.strip()] = v.strip()
+    amap_key = config.get("AMAP_KEY", "")
 
     # 加载数据
     spots = parse_file(os.path.join(data_dir, 'spot.txt'))
@@ -87,8 +117,16 @@ def main():
     ]
     for a, b in spot_connections:
         if a in all_nodes and b in all_nodes:
-            dist = haversine(all_nodes[a][1], all_nodes[a][2],
-                           all_nodes[b][1], all_nodes[b][2])
+            na, nb = all_nodes[a], all_nodes[b]
+            dist = None
+            if amap_key:
+                dist, dur = amap_driving(amap_key, na[1], na[2], nb[1], nb[2])
+                if dist is not None:
+                    edges.append((a, b, dist, dur))
+                    edges.append((b, a, dist, dur))
+                    time.sleep(0.5)
+                    continue
+            dist = haversine(na[1], na[2], nb[1], nb[2])
             t = time_from_distance(dist)
             edges.append((a, b, int(dist), t))
             edges.append((b, a, int(dist), t))  # 无向
@@ -141,12 +179,19 @@ def main():
         for j in range(i+1, len(new_mudan_foods)):
             a, b = new_mudan_foods[i], new_mudan_foods[j]
             if a in all_nodes and b in all_nodes:
-                dist = haversine(all_nodes[a][1], all_nodes[a][2],
-                               all_nodes[b][1], all_nodes[b][2])
-                if dist < 5000:
-                    t = time_from_distance(dist)
-                    edges.append((a, b, int(dist), t))
-                    edges.append((b, a, int(dist), t))
+                na, nb = all_nodes[a], all_nodes[b]
+                hdist = haversine(na[1], na[2], nb[1], nb[2])
+                if amap_key and hdist < 20000:
+                    rdist, rdur = amap_driving(amap_key, na[1], na[2], nb[1], nb[2])
+                    if rdist is not None:
+                        edges.append((a, b, rdist, rdur))
+                        edges.append((b, a, rdist, rdur))
+                        time.sleep(0.5)
+                        continue
+                if hdist < 5000:
+                    t = time_from_distance(hdist)
+                    edges.append((a, b, int(hdist), t))
+                    edges.append((b, a, int(hdist), t))
 
     # ===== 跨区连接（菏泽↔各县城） =====
     district_hubs = {
@@ -228,12 +273,19 @@ def main():
             for j in range(i+1, len(county_foods)):
                 a, b = county_foods[i], county_foods[j]
                 if a in all_nodes and b in all_nodes:
-                    dist = haversine(all_nodes[a][1], all_nodes[a][2],
-                                   all_nodes[b][1], all_nodes[b][2])
-                    if dist < 10000:
-                        t = time_from_distance(dist)
-                        edges.append((a, b, int(dist), t))
-                        edges.append((b, a, int(dist), t))
+                    na, nb = all_nodes[a], all_nodes[b]
+                    hdist = haversine(na[1], na[2], nb[1], nb[2])
+                    if amap_key and hdist < 20000:
+                        rdist, rdur = amap_driving(amap_key, na[1], na[2], nb[1], nb[2])
+                        if rdist is not None:
+                            edges.append((a, b, rdist, rdur))
+                            edges.append((b, a, rdist, rdur))
+                            time.sleep(0.5)
+                            continue
+                    if hdist < 10000:
+                        t = time_from_distance(hdist)
+                        edges.append((a, b, int(hdist), t))
+                        edges.append((b, a, int(hdist), t))
 
     # 去重：使用字典，保留最短距离
     edge_map = {}
