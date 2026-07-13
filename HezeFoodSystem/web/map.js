@@ -20,6 +20,9 @@ var spotData = [];
 var routeData = null;
 var activeCategories = new Set();
 var addressCache = {};       // 逆地理编码缓存
+var toggleFoodVisible = true;
+var toggleSpotVisible = true;
+var toggleRouteVisible = true;
 
 var HEZE_CENTER = [115.477, 35.245];  // 菏泽市中心（基于真实数据重新计算）
 var AMAP_KEY = "647bb3e7a596c479b998f3e20a5a486a";
@@ -38,9 +41,9 @@ var CATEGORY_COLORS = {
 };
 
 var CATEGORY_ICONS = {
-    '汤类': '🍜', '面食': '🍝', '小吃': '🍢', '正餐': '🍽️',
-    '烧烤': '🔥', '甜品': '🍰', '饮品': '☕', '凉菜': '🥗',
-    'default': '🍴'
+    '汤类': '汤', '面食': '面', '小吃': '吃', '正餐': '餐',
+    '烧烤': '烤', '甜品': '甜', '饮品': '饮', '凉菜': '凉',
+    'default': '食'
 };
 
 // ==================== 地图初始化 ====================
@@ -124,6 +127,7 @@ async function loadData() {
 
     updateStats();
     generateCategoryFilters();
+        initSearch();
 
     if (map) {
         if (foodData.length > 0) showFoodMarkers();
@@ -170,24 +174,22 @@ function showFoodMarkers() {
         if (activeCategories.size > 0 && !activeCategories.has(food.category)) return;
 
         var color = CATEGORY_COLORS[food.category] || CATEGORY_COLORS['default'];
-        var icon = CATEGORY_ICONS[food.category] || CATEGORY_ICONS['default'];
-        var displayId = index + 1;
 
+        var displayChar = food.name.charAt(0);
         var markerContent =
             '<div class="food-marker" style="' +
             'background:' + color + ';' +
             'color:white;' +
             'width:32px;height:32px;' +
-            'border-radius:50% 50% 50% 0;' +
-            'transform:rotate(-45deg);' +
+            'border-radius:50%;' +
             'display:flex;align-items:center;justify-content:center;' +
-            'font-size:14px;' +
+            'font-size:14px;font-weight:bold;' +
             'box-shadow:0 2px 6px rgba(0,0,0,0.3);' +
             'border:2px solid white;' +
             'cursor:pointer;' +
             'transition:transform 0.2s;' +
             '">' +
-            '<span style="transform:rotate(45deg);">' + icon + '</span>' +
+            displayChar +
             '</div>';
 
         try {
@@ -204,17 +206,19 @@ function showFoodMarkers() {
                 showFoodDetail(food);
             });
 
-            // 鼠标悬停变大
             marker.on('mouseover', function () {
-                this.setContent(markerContent.replace('32px', '40px').replace('14px', '17px'));
-                this.setOffset(new AMap.Pixel(-10, -10));
+                this.setContent(markerContent.replace('width:32px','width:40px').replace('height:32px','height:40px').replace('font-size:14px','font-size:17px'));
             });
             marker.on('mouseout', function () {
                 this.setContent(markerContent);
-                this.setOffset(new AMap.Pixel(-8, -8));
             });
 
             marker.setMap(map);
+            if (!toggleFoodVisible) marker.setVisible(false);
+            var status = getOpenStatus(food.opentime);
+            if (status.cls === 'status-closed') {
+                marker.setOpacity(0.35);
+            }
             foodMarkers.push(marker);
         } catch (e) {
             console.warn('[Map] 美食标记失败:', food.name, e);
@@ -244,7 +248,7 @@ function showSpotMarkers() {
             'border:2px solid white;' +
             'cursor:pointer;' +
             '">' +
-            '<span style="transform:rotate(-45deg);">🏛</span>' +
+            '<span style="transform:rotate(-45deg);">景</span>' +
             '</div>';
 
         try {
@@ -261,9 +265,8 @@ function showSpotMarkers() {
             });
 
             marker.setMap(map);
+            if (!toggleSpotVisible) marker.setVisible(false);
             spotMarkers.push(marker);
-        } catch (e) {
-            console.warn('[Map] 景点标记失败:', spot.name, e);
         }
     });
 
@@ -301,8 +304,15 @@ function showFoodDetail(food) {
     }
 
     var addrId = 'addr-food-' + food.id;
+    var statusBar = '';
+    if (food.opentime && food.opentime !== '-') {
+        var s = getOpenStatus(food.opentime);
+        statusBar = '<div style="font-size:12px;margin-bottom:6px;color:' + (s.cls === 'status-open' ? '#4caf50' : '#999') + ';">' +
+            (s.cls === 'status-open' ? '●' : '○') + ' ' + s.text + ' · ' + food.opentime + '</div>';
+    }
     var html =
         '<div class="info-window">' +
+        statusBar +
         '<h4 style="border-color:' + color + '">' + icon + ' ' + food.name + '</h4>' +
         '<div class="info-row"><span class="info-label">评分</span>' +
         '<span class="info-score" style="color:#ff9800;">' + stars + ' ' + food.score.toFixed(1) + '</span></div>' +
@@ -347,7 +357,7 @@ function showSpotDetail(spot) {
     var addrId = 'addr-spot-' + spot.id;
     var html =
         '<div class="info-window">' +
-        '<h4 style="color:#1565c0;border-color:#1565c0;">🏛 ' + spot.name + '</h4>' +
+        '<h4 style="color:#1565c0;border-color:#1565c0;">[景点] ' + spot.name + '</h4>' +
         '<div class="info-row"><span class="info-label">类型</span><span>' + spot.type + '</span></div>' +
         '<div class="info-row"><span class="info-label">评分</span>' +
         '<span class="info-score">' + stars + ' ' + spot.score.toFixed(1) + '</span></div>' +
@@ -402,6 +412,7 @@ function showRoute() {
             dirColor: '#fff'
         });
         routePolyline.setMap(map);
+        if (!toggleRouteVisible) routePolyline.setVisible(false);
 
         // 路径点标记
         routeData.waypoints.forEach(function (point, i) {
@@ -441,7 +452,7 @@ function showRoute() {
                 var wpHtml =
                     '<div class="info-window">' +
                     '<h4 style="color:' + bgColor + ';border-color:' + bgColor + ';">' +
-                    (isFood ? '🍴 ' : '🏛 ') + wp.name + '</h4>' +
+                    (isFood ? '[美食] ' : '[景点] ') + wp.name + '</h4>' +
                     '<p style="color:#666;">' + (isStart ? '起点' : (isEnd ? '终点' : '途经点 ' + i)) + '</p>' +
                     '</div>';
                 new AMap.InfoWindow({
@@ -451,6 +462,7 @@ function showRoute() {
             });
 
             marker.setMap(map);
+            if (!toggleRouteVisible) marker.setVisible(false);
             routeMarkers.push(marker);
         });
 
@@ -464,6 +476,7 @@ function showRoute() {
             zIndex: 150
         });
         routeLabel.setMap(map);
+        if (!toggleRouteVisible) routeLabel.setVisible(false);
         routeMarkers.push(routeLabel);
 
         console.log('[Map] 路线显示完成');
@@ -535,14 +548,17 @@ function autoFitView() {
 
 function initControls() {
     document.getElementById('toggleFood').addEventListener('change', function () {
-        foodMarkers.forEach(function (m) { m.setVisible(this.checked); }.bind(this));
+        toggleFoodVisible = this.checked;
+        foodMarkers.forEach(function (m) { m.setVisible(toggleFoodVisible); });
     });
     document.getElementById('toggleSpot').addEventListener('change', function () {
-        spotMarkers.forEach(function (m) { m.setVisible(this.checked); }.bind(this));
+        toggleSpotVisible = this.checked;
+        spotMarkers.forEach(function (m) { m.setVisible(toggleSpotVisible); });
     });
     document.getElementById('toggleRoute').addEventListener('change', function () {
-        if (routePolyline) routePolyline.setVisible(this.checked);
-        routeMarkers.forEach(function (m) { m.setVisible(this.checked); }.bind(this));
+        toggleRouteVisible = this.checked;
+        if (routePolyline) routePolyline.setVisible(toggleRouteVisible);
+        routeMarkers.forEach(function (m) { m.setVisible(toggleRouteVisible); });
     });
 
     document.getElementById('btnZoomIn').addEventListener('click', function () {
@@ -554,6 +570,22 @@ function initControls() {
     document.getElementById('btnReset').addEventListener('click', function () {
         if (map) map.setZoomAndCenter(13, HEZE_CENTER);
     });
+
+    var openOnlyEl = document.getElementById('toggleOpenOnly');
+    if (openOnlyEl) {
+        openOnlyEl.addEventListener('change', function() {
+            var showOnlyOpen = this.checked;
+            foodMarkers.forEach(function(m, i) {
+                var food = foodData[i];
+                if (!food) return;
+                if (showOnlyOpen && getOpenStatus(food.opentime).cls === 'status-closed') {
+                    m.setVisible(false);
+                } else {
+                    m.setVisible(toggleFoodVisible);
+                }
+            });
+        });
+    }
 }
 
 function generateCategoryFilters() {
@@ -607,6 +639,147 @@ function updateStats() {
         document.getElementById('routeDistance').textContent = '0';
         document.getElementById('routeTime').textContent = '0';
     }
+}
+
+// ==================== 搜索 ====================
+
+function matchesQuery(text, query) {
+    if (!query || !text) return false;
+    var lowerText = text.toLowerCase().replace(/\s+/g, '');
+    var lowerQuery = query.toLowerCase().replace(/\s+/g, '');
+    return lowerText.indexOf(lowerQuery) !== -1;
+}
+
+function performSearch() {
+    var query = document.getElementById('searchInput').value.trim();
+    var searchType = document.querySelector('.search-type-tag.active').dataset.type;
+    var resultDiv = document.getElementById('searchResults');
+    var resultList = document.getElementById('searchResultList');
+    var resultCount = document.getElementById('searchResultCount');
+
+    if (!query) {
+        resultDiv.style.display = 'none';
+        if (map) {
+            foodMarkers.forEach(function(m) { m.setOpacity(1); });
+            spotMarkers.forEach(function(m) { m.setOpacity(1); });
+        }
+        return;
+    }
+
+    var results = [];
+
+    if (searchType === 'all' || searchType === 'food') {
+        foodData.forEach(function(f) {
+            var m = matchesQuery(f.name, query) || matchesQuery(f.address, query) ||
+                    (f.tags && f.tags.some(function(t) { return matchesQuery(t, query); }));
+            if (m) results.push({ type: 'food', data: f });
+        });
+    }
+    if (searchType === 'all' || searchType === 'spot') {
+        spotData.forEach(function(s) {
+            var m = matchesQuery(s.name, query) || matchesQuery(s.address, query) ||
+                    matchesQuery(s.description, query);
+            if (m) results.push({ type: 'spot', data: s });
+        });
+    }
+
+    resultCount.textContent = results.length;
+
+    if (results.length === 0) {
+        resultList.innerHTML = '<div class="search-result-nohits">未找到匹配项</div>';
+    } else {
+        var html = '';
+        results.slice(0, 50).forEach(function(r) {
+            var item = r.data;
+            var isFood = r.type === 'food';
+            var color = isFood ? (CATEGORY_COLORS[item.category] || CATEGORY_COLORS.default) : '#1565c0';
+            var icon = isFood ? item.name.charAt(0) : '景';
+            var sub = isFood ? item.category + ' / ' + item.score.toFixed(1) + '分 / ¥' + item.price : item.type;
+            html += '<div class="search-result-item" data-type="' + r.type + '" data-id="' + item.id + '" data-lng="' + item.lng + '" data-lat="' + item.lat + '">' +
+                '<div class="search-result-icon" style="background:' + color + '">' + icon + '</div>' +
+                '<div style="flex:1"><div class="search-result-name">' + item.name + '</div>' +
+                '<div class="search-result-meta">' + sub + '</div></div></div>';
+        });
+        resultList.innerHTML = html;
+
+        resultList.querySelectorAll('.search-result-item').forEach(function(el) {
+            el.addEventListener('click', function() {
+                var type = this.dataset.type;
+                var id = parseInt(this.dataset.id);
+                var lng = parseFloat(this.dataset.lng);
+                var lat = parseFloat(this.dataset.lat);
+                if (map) {
+                    map.setZoomAndCenter(16, [lng, lat]);
+                    if (type === 'food') {
+                        var food = foodData.find(function(f) { return f.id === id; });
+                        if (food) showFoodDetail(food);
+                    } else {
+                        var spot = spotData.find(function(s) { return s.id === id; });
+                        if (spot) showSpotDetail(spot);
+                    }
+                }
+            });
+        });
+    }
+
+    resultDiv.style.display = 'block';
+
+    if (map) {
+        var resultIds = new Set();
+        results.forEach(function(r) { resultIds.add(r.data.id); });
+        foodMarkers.forEach(function(m, i) {
+            m.setOpacity(resultIds.has(foodData[i].id) ? 1 : 0.2);
+        });
+        spotMarkers.forEach(function(m, i) {
+            m.setOpacity(resultIds.has(spotData[i].id) ? 1 : 0.2);
+        });
+    }
+}
+
+function initSearch() {
+    var searchInput = document.getElementById('searchInput');
+    if (!searchInput) return;
+    searchInput.addEventListener('input', function() {
+        clearTimeout(this._searchTimer);
+        this._searchTimer = setTimeout(performSearch, 200);
+    });
+    document.querySelectorAll('.search-type-tag').forEach(function(tag) {
+        tag.addEventListener('click', function() {
+            document.querySelectorAll('.search-type-tag').forEach(function(t) { t.classList.remove('active'); });
+            this.classList.add('active');
+            performSearch();
+        });
+    });
+}
+
+// ==================== 营业状态 ====================
+
+function getOpenStatus(opentime) {
+    if (!opentime || opentime === '-' || opentime === '24小时' || opentime === '全天' || opentime.indexOf('全天') !== -1) {
+        return { cls: 'status-open', text: '营业中' };
+    }
+    var now = new Date();
+    var currentMin = now.getHours() * 60 + now.getMinutes();
+    var segments = opentime.split(',');
+    for (var i = 0; i < segments.length; i++) {
+        var parts = segments[i].trim().split('-');
+        if (parts.length === 2) {
+            var s = parts[0].trim().split(':');
+            var e = parts[1].trim().split(':');
+            if (s.length >= 2 && e.length >= 2) {
+                var start = parseInt(s[0]) * 60 + parseInt(s[1]);
+                var end = parseInt(e[0]) * 60 + parseInt(e[1]);
+                if (end <= start) end += 24 * 60;
+                if (currentMin >= start && currentMin <= end) {
+                    return { cls: 'status-open', text: '营业中' };
+                }
+                if (currentMin + 24*60 >= start && currentMin + 24*60 <= end) {
+                    return { cls: 'status-open', text: '营业中' };
+                }
+            }
+        }
+    }
+    return { cls: 'status-closed', text: '已打烊' };
 }
 
 // ==================== 启动 ====================

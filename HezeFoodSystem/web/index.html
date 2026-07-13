@@ -37,6 +37,28 @@
             </div>
 
             <div class="panel">
+                <h3>搜索</h3>
+                <div class="search-box">
+                    <input type="text" id="searchInput" class="search-input" placeholder="搜索名称、地址或标签...">
+                    <div class="search-type">
+                        <span class="search-type-tag active" data-type="all">全部</span>
+                        <span class="search-type-tag" data-type="food">美食</span>
+                        <span class="search-type-tag" data-type="spot">景点</span>
+                    </div>
+                    <label class="open-only-toggle" style="margin-top:8px;display:flex;align-items:center;gap:6px;cursor:pointer;font-size:12px;color:#666;">
+                        <input type="checkbox" id="toggleOpenOnly">
+                        仅显示营业中
+                    </label>
+                </div>
+                <div id="searchResults" class="search-results" style="display:none;">
+                    <div class="search-results-header">
+                        <span id="searchResultCount">0</span> 个结果
+                    </div>
+                    <div id="searchResultList" class="search-result-list"></div>
+                </div>
+            </div>
+
+            <div class="panel">
                 <h3>数据统计</h3>
                 <div class="stats">
                     <div class="stat-item">
