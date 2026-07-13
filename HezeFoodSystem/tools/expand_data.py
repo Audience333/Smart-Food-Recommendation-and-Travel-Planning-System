@@ -260,8 +260,7 @@ def safe_float_from_biz(biz_ext, key, default):
 
 
 def convert_new_foods(pois, start_id, existing_names, existing_locs, district):
-    foods = []
-    next_id = start_id
+    candidates = []
     for poi in pois:
         lng, lat = parse_location(poi.get("location", ""))
         if lng == 0 or lat == 0:
@@ -278,23 +277,28 @@ def convert_new_foods(pois, start_id, existing_names, existing_locs, district):
         cost = safe_float_from_biz(biz_ext, "cost", 30.0)
         address = safe_str(poi.get("address", "-")).replace("|", " ")
         tags = generate_food_tags(name, category, district)
-        foods.append({
-            "id": next_id, "name": name, "lng": lng, "lat": lat,
+        candidates.append({
+            "name": name, "lng": lng, "lat": lat,
             "price": cost, "score": score, "category": category,
             "address": address, "tags": tags
         })
-        existing_names.add(name)
-        existing_locs.append((name, lng, lat))
-        next_id += 1
 
-    foods.sort(key=lambda x: x["score"], reverse=True)
-    foods = foods[:MAX_FOODS_PER_DISTRICT]
+    candidates.sort(key=lambda x: x["score"], reverse=True)
+    selected = candidates[:MAX_FOODS_PER_DISTRICT]
+
+    foods = []
+    for item in selected:
+        item["id"] = start_id
+        foods.append(item)
+        existing_names.add(item["name"])
+        existing_locs.append((item["name"], item["lng"], item["lat"]))
+        start_id += 1
+
     return foods
 
 
 def convert_new_spots(pois, start_id, existing_names, existing_locs):
-    spots = []
-    next_id = start_id
+    candidates = []
     for poi in pois:
         lng, lat = parse_location(poi.get("location", ""))
         if lng == 0 or lat == 0:
@@ -308,8 +312,8 @@ def convert_new_spots(pois, start_id, existing_names, existing_locs):
         if score < 1.0 or score > 5.0:
             score = 4.0
         address = safe_str(poi.get("address", "-")).replace("|", " ")
-        spots.append({
-            "id": next_id, "name": name, "lng": lng, "lat": lat,
+        candidates.append({
+            "name": name, "lng": lng, "lat": lat,
             "description": name,
             "address": address,
             "type": infer_spot_type(type_name),
@@ -320,12 +324,18 @@ def convert_new_spots(pois, start_id, existing_names, existing_locs):
             "score": score,
             "tags": []
         })
-        existing_names.add(name)
-        existing_locs.append((name, lng, lat))
-        next_id += 1
 
-    spots.sort(key=lambda x: x["score"], reverse=True)
-    spots = spots[:MAX_SPOTS_PER_DISTRICT]
+    candidates.sort(key=lambda x: x["score"], reverse=True)
+    selected = candidates[:MAX_SPOTS_PER_DISTRICT]
+
+    spots = []
+    for item in selected:
+        item["id"] = start_id
+        spots.append(item)
+        existing_names.add(item["name"])
+        existing_locs.append((item["name"], item["lng"], item["lat"]))
+        start_id += 1
+
     return spots
 
 
