@@ -321,6 +321,14 @@ async function loadData() {
         RankingManager.init();
         RankingManager.renderPanel();
         initHistory();
+        document.querySelectorAll('.floating-panel').forEach(function(panel) {
+            var trigger = panel.querySelector('.floating-panel-trigger');
+            var body = panel.querySelector('.floating-panel-body');
+            if (trigger && body) {
+                trigger.addEventListener('mouseenter', function() { body.style.display = 'block'; });
+                panel.addEventListener('mouseleave', function() { body.style.display = 'none'; });
+            }
+        });
 
     if (map) {
         if (foodData.length > 0) showFoodMarkers();
@@ -395,7 +403,6 @@ function showFoodMarkers() {
                 title: food.name
             });
 
-            // 点击显示详情
             marker.on('click', function () {
                 showFoodDetail(food);
             });
@@ -408,20 +415,24 @@ function showFoodMarkers() {
             });
 
             marker._foodData = food;
-            var shouldShow = toggleFoodVisible;
-            if (shouldShow) {
-                var openOnlyCheckbox = document.getElementById('toggleOpenOnly');
-                if (openOnlyCheckbox && openOnlyCheckbox.checked) {
-                    var status = getOpenStatus(food.opentime);
-                    if (status.cls === 'status-closed') shouldShow = false;
-                }
-            }
-            if (shouldShow) marker.setMap(map);
+            marker.setMap(map);
             foodMarkers.push(marker);
         } catch (e) {
             console.warn('[Map] 美食标记失败:', food.name, e);
         }
     });
+
+    if (!toggleFoodVisible) {
+        foodMarkers.forEach(function(m) { m.setMap(null); });
+    }
+    var openOnlyCb = document.getElementById('toggleOpenOnly');
+    if (openOnlyCb && openOnlyCb.checked) {
+        foodMarkers.forEach(function(m) {
+            if (m._foodData && getOpenStatus(m._foodData.opentime).cls === 'status-closed') {
+                m.setMap(null);
+            }
+        });
+    }
 
     console.log('[Map] 美食标记:', foodMarkers.length, '个');
 }
@@ -466,12 +477,17 @@ function showSpotMarkers() {
                 showSpotDetail(spot);
             });
 
-            if (toggleSpotVisible) marker.setMap(map);
+            marker._spotData = spot;
+            marker.setMap(map);
             spotMarkers.push(marker);
         } catch (e) {
             console.warn('[Map] 景点标记失败:', spot.name, e);
         }
     });
+
+    if (!toggleSpotVisible) {
+        spotMarkers.forEach(function(m) { m.setMap(null); });
+    }
 
     console.log('[Map] 景点标记:', spotMarkers.length, '个');
 }
@@ -524,12 +540,12 @@ function showFoodDetail(food) {
     }
     HistoryManager.push('view', { poiId: food.id, poiType: 'food', lng: food.lng, lat: food.lat, poiName: food.name });
     var isFav = FavoriteManager.isFavorite(food.id, 'food');
-    var starHtml = '<span class="fav-star ' + (isFav ? 'faved' : '') + '" data-poi-id="' + food.id + '" data-poi-type="food" style="cursor:pointer;float:right;font-size:20px;color:' + (isFav ? '#ff9800' : '#ccc') + ';">' + (isFav ? '&#9733;' : '&#9734;') + '</span>';
+    var starBtn = '<div class="fav-btn ' + (isFav ? 'faved' : '') + '" data-poi-id="' + food.id + '" data-poi-type="food" style="cursor:pointer;padding:4px 8px;margin-bottom:8px;background:' + (isFav ? '#fff3e0' : '#f5f5f5') + ';border-radius:4px;text-align:center;font-size:13px;border:1px solid ' + (isFav ? '#ff9800' : '#ddd') + ';">' + (isFav ? '★ 已收藏' : '☆ 收藏') + '</div>';
     var html =
         '<div class="info-window">' +
+        starBtn +
         photosHtml +
         statusBar +
-        starHtml +
         '<h4 style="border-color:' + color + '">' + icon + ' ' + food.name + '</h4>' +
         '<div class="info-row"><span class="info-label">评分</span>' +
         '<span class="info-score" style="color:#ff9800;">' + stars + ' ' + food.score.toFixed(1) + '</span></div>' +
@@ -551,10 +567,10 @@ function showFoodDetail(food) {
     infoWindow.open(map, [food.lng, food.lat]);
 
     setTimeout(function() {
-        var se = document.querySelector('.fav-star[data-poi-id="' + food.id + '"][data-poi-type="food"]');
+        var se = document.querySelector('.fav-btn[data-poi-id="' + food.id + '"]');
         if (se) { se.addEventListener('click', function(e) { e.stopPropagation();
-            if (FavoriteManager.isFavorite(food.id, 'food')) FavoriteManager.remove(food.id, 'food');
-            else FavoriteManager.add({ id: food.id, type: 'food', name: food.name }); }); }
+            if (FavoriteManager.isFavorite(food.id, 'food')) { FavoriteManager.remove(food.id, 'food'); se.innerHTML = '&#9734; 收藏'; se.className = 'fav-btn'; se.style.background = '#f5f5f5'; se.style.borderColor = '#ddd'; }
+            else { FavoriteManager.add({ id: food.id, type: 'food', name: food.name }); se.innerHTML = '&#9733; 已收藏'; se.className = 'fav-btn faved'; se.style.background = '#fff3e0'; se.style.borderColor = '#ff9800'; } }); }
     }, 100);
 
     var addrEl = document.getElementById(addrId);
@@ -596,11 +612,11 @@ function showSpotDetail(spot) {
     }
 
     var isFav = FavoriteManager.isFavorite(spot.id, 'spot');
-    var starHtml = '<span class="fav-star ' + (isFav ? 'faved' : '') + '" data-poi-id="' + spot.id + '" data-poi-type="spot" style="cursor:pointer;float:right;font-size:20px;color:' + (isFav ? '#ff9800' : '#ccc') + ';">' + (isFav ? '&#9733;' : '&#9734;') + '</span>';
+    var starBtn = '<div class="fav-btn ' + (isFav ? 'faved' : '') + '" data-poi-id="' + spot.id + '" data-poi-type="spot" style="cursor:pointer;padding:4px 8px;margin-bottom:8px;background:' + (isFav ? '#fff3e0' : '#f5f5f5') + ';border-radius:4px;text-align:center;font-size:13px;border:1px solid ' + (isFav ? '#ff9800' : '#ddd') + ';">' + (isFav ? '★ 已收藏' : '☆ 收藏') + '</div>';
     var html =
         '<div class="info-window">' +
+        starBtn +
         photosHtml +
-        starHtml +
         '<h4 style="color:#1565c0;border-color:#1565c0;">[景点] ' + spot.name + '</h4>' +
         '<div class="info-row"><span class="info-label">类型</span><span>' + spot.type + '</span></div>' +
         '<div class="info-row"><span class="info-label">评分</span>' +
@@ -623,10 +639,10 @@ function showSpotDetail(spot) {
     infoWindow.open(map, [spot.lng, spot.lat]);
 
     setTimeout(function() {
-        var se = document.querySelector('.fav-star[data-poi-id="' + spot.id + '"][data-poi-type="spot"]');
+        var se = document.querySelector('.fav-btn[data-poi-id="' + spot.id + '"]');
         if (se) { se.addEventListener('click', function(e) { e.stopPropagation();
-            if (FavoriteManager.isFavorite(spot.id, 'spot')) FavoriteManager.remove(spot.id, 'spot');
-            else FavoriteManager.add({ id: spot.id, type: 'spot', name: spot.name }); }); }
+            if (FavoriteManager.isFavorite(spot.id, 'spot')) { FavoriteManager.remove(spot.id, 'spot'); se.innerHTML = '&#9734; 收藏'; se.className = 'fav-btn'; se.style.background = '#f5f5f5'; se.style.borderColor = '#ddd'; }
+            else { FavoriteManager.add({ id: spot.id, type: 'spot', name: spot.name }); se.innerHTML = '&#9733; 已收藏'; se.className = 'fav-btn faved'; se.style.background = '#fff3e0'; se.style.borderColor = '#ff9800'; } }); }
     }, 100);
 
     // 如果已有地址缓存则直接显示，否则异步获取真实地址
@@ -667,14 +683,30 @@ function autoFitView() {
 // ==================== 图层控制与UI ====================
 
 function initControls() {
-    document.getElementById('toggleFood').addEventListener('change', function () {
-        if (toggleFoodVisible === this.checked) return;
-        toggleFoodVisible = this.checked;
-        showFoodMarkers();
+    var foodToggleLabel = document.querySelector('label.toggle:has(#toggleFood)');
+    if (!foodToggleLabel) foodToggleLabel = document.getElementById('toggleFood').parentElement;
+    foodToggleLabel.addEventListener('click', function(e) {
+        setTimeout(function() {
+            toggleFoodVisible = document.getElementById('toggleFood').checked;
+            if (toggleFoodVisible) {
+                foodMarkers.forEach(function(m) { m.setMap(map); });
+            } else {
+                foodMarkers.forEach(function(m) { m.setMap(null); });
+            }
+        }, 10);
     });
-    document.getElementById('toggleSpot').addEventListener('change', function () {
-        toggleSpotVisible = this.checked;
-        showSpotMarkers();
+
+    var spotToggleLabel = document.querySelector('label.toggle:has(#toggleSpot)');
+    if (!spotToggleLabel) spotToggleLabel = document.getElementById('toggleSpot').parentElement;
+    spotToggleLabel.addEventListener('click', function(e) {
+        setTimeout(function() {
+            toggleSpotVisible = document.getElementById('toggleSpot').checked;
+            if (toggleSpotVisible) {
+                spotMarkers.forEach(function(m) { m.setMap(map); });
+            } else {
+                spotMarkers.forEach(function(m) { m.setMap(null); });
+            }
+        }, 10);
     });
 
     document.getElementById('btnZoomIn').addEventListener('click', function () {
@@ -690,6 +722,8 @@ function initControls() {
     var openOnlyEl = document.getElementById('toggleOpenOnly');
     if (openOnlyEl) {
         openOnlyEl.addEventListener('change', function() {
+            foodMarkers.forEach(function(m) { m.setMap(null); });
+            foodMarkers = [];
             showFoodMarkers();
         });
     }
@@ -1233,12 +1267,20 @@ function renderRouteSummary() {
 // ==================== 历史管理器 UI ====================
 
 function initHistory() {
-    document.getElementById('btnHistoryUndo').addEventListener('click', function() { HistoryManager.undo(); });
-    document.getElementById('btnHistoryRedo').addEventListener('click', function() { HistoryManager.redo(); });
-    document.getElementById('btnHistoryClear').addEventListener('click', function() { HistoryManager.clear(); });
+    var undoBtn = document.getElementById('btnHistoryUndo');
+    var redoBtn = document.getElementById('btnHistoryRedo');
+    var clearBtn = document.getElementById('btnHistoryClear');
     var dropdown = document.getElementById('historyDropdown');
     var trigger = document.getElementById('btnHistoryDropdown');
+    
+    if (undoBtn) undoBtn.addEventListener('click', function() { HistoryManager.undo(); });
+    if (redoBtn) redoBtn.addEventListener('click', function() { HistoryManager.redo(); });
+    if (clearBtn) clearBtn.addEventListener('click', function() { HistoryManager.clear(); });
+    
     if (trigger && dropdown) {
+        trigger.addEventListener('click', function(e) { e.stopPropagation();
+            dropdown.style.display = dropdown.style.display === 'block' ? 'none' : 'block';
+        });
         trigger.addEventListener('mouseenter', function() { dropdown.style.display = 'block'; });
         dropdown.addEventListener('mouseleave', function() { dropdown.style.display = 'none'; });
         dropdown.addEventListener('click', function(e) {

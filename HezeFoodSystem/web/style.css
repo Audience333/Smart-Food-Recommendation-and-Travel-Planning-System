@@ -539,7 +539,24 @@ body {
 .route-segment-toll { color: #f44336; font-size: 12px; }
 .route-loading { text-align: center; padding: 20px; color: #999; }
 .route-error { text-align: center; padding: 20px; color: #d32f2f; }
-.history-controls { position:absolute;top:15px;left:15px;z-index:60;display:flex;gap:4px;align-items:flex-start; }
+.top-floating-bar {
+    position: absolute; top: 15px; left: 15px; z-index: 60;
+    display: flex; gap: 6px; align-items: flex-start;
+}
+.history-controls { display:flex;gap:4px;align-items:flex-start;position:relative; }
+.floating-panel { position: relative; }
+.floating-panel-trigger {
+    padding: 6px 10px; background: white; border: 1px solid #ccc;
+    border-radius: 4px; font-size: 12px; cursor: pointer;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1); white-space: nowrap;
+}
+.floating-panel-trigger:hover { background: #f5f5f5; }
+.floating-panel-body {
+    position: absolute; top: 100%; left: 0; margin-top: 4px;
+    width: 260px; max-height: 400px; overflow-y: auto;
+    background: white; border-radius: 6px;
+    box-shadow: 0 4px 16px rgba(0,0,0,0.15); padding: 12px;
+}
 .history-btn { padding:6px 10px;background:white;border:1px solid #ccc;border-radius:4px;font-size:12px;cursor:pointer;box-shadow:0 2px 4px rgba(0,0,0,0.1);transition:all 0.15s; }
 .history-btn:hover { background:#f5f5f5;border-color:#999; }
 .history-dropdown { position:absolute;top:100%;left:0;margin-top:4px;width:240px;background:white;border-radius:6px;box-shadow:0 4px 16px rgba(0,0,0,0.15);z-index:70;overflow:hidden; }
