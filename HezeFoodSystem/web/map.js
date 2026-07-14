@@ -1370,8 +1370,9 @@ function planRouteSegments(waypoints, index) {
                     var path = data.route.paths[0];
                     var segment = {
                         from: from.name, to: to.name,
-                        distance: path.distance, duration: path.duration,
-                        tolls: path.tolls || 0,
+                        distance: Number(path.distance) || 0,
+                        duration: Number(path.duration) || 0,
+                        tolls: Number(path.tolls) || 0,
                         steps: parsePolyline(path.steps || [])
                     };
                     renderRouteSegment(segment, index);
@@ -1490,7 +1491,7 @@ function renderRouteSummary() {
 
     var sm = document.getElementById('routeSummary');
 
-    if (totalDist > 10000000 || isNaN(totalDist)) {
+    if (isNaN(totalDist) || totalDist === 0) {
         if (sm) sm.innerHTML = '<div class="route-error">路径计算异常，请重试</div>';
         return;
     }

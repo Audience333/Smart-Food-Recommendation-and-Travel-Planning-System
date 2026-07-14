@@ -576,3 +576,9 @@ body {
 .daily-tour-alt { display: flex; align-items: center; gap: 8px; padding: 6px 0; font-size: 13px; border-bottom: 1px solid #f0f0f0; }
 .daily-tour-alt span:nth-child(1) { flex: 1; }
 .daily-tour-alt span:nth-child(2) { color: #999; font-size: 12px; }
+
+.amap-info-content a,
+.amap-info-content .amap-info-sharp,
+.amap-info-close + div:last-child { display: none !important; }
+
+.info-window a { display: none; }
