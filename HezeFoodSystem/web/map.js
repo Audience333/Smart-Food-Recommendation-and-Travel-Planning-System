@@ -114,6 +114,8 @@ var FavoriteManager = {
         HistoryManager.push('fav_add', { id: poi.id, type: poi.type, name: poi.name });
         this.renderPanel();
         RankingManager.refresh();
+        ProfileManager.renderPanel();
+        DailyTourManager.generate();
         if (typeof showFoodMarkers === 'function') showFoodMarkers();
         if (typeof showSpotMarkers === 'function') showSpotMarkers();
     },
@@ -124,6 +126,8 @@ var FavoriteManager = {
         if (item) HistoryManager.push('fav_del', { id: id, type: type, name: item.name });
         this.renderPanel();
         RankingManager.refresh();
+        ProfileManager.renderPanel();
+        DailyTourManager.generate();
         if (typeof showFoodMarkers === 'function') showFoodMarkers();
         if (typeof showSpotMarkers === 'function') showSpotMarkers();
     },
@@ -215,6 +219,232 @@ var RankingManager = {
         document.querySelectorAll('.ranking-tab').forEach(function(tab){ tab.addEventListener('click',function(){
             document.querySelectorAll('.ranking-tab').forEach(function(t){t.classList.remove('active');});
             this.classList.add('active'); self.currentTab = this.dataset.tab; self.renderPanel(); }); });
+    }
+};
+
+var ProfileManager = {
+    renderPanel: function() {
+        var container = document.getElementById('profilePanel');
+        if (!container) return;
+        var favs = FavoriteManager.getAll();
+        if (favs.length === 0) {
+            container.innerHTML = '<div class="profile-empty">收藏美食后可查看画像</div>';
+            return;
+        }
+        
+        var foods = favs.filter(function(f) { return f.favType === 'food'; });
+        if (foods.length === 0) {
+            container.innerHTML = '<div class="profile-empty">收藏美食后可查看画像</div>';
+            return;
+        }
+
+        // 1. Taste analysis
+        var tasteCounts = {};
+        foods.forEach(function(f) {
+            if (f.tags) {
+                f.tags.forEach(function(t) {
+                    if (t.match(/^[^\d]/) && t.length <= 4 && !t.match(/^(早|午|晚|宵|下午|全天|堂食|外卖|快餐|聚餐|一人食|宴请|团餐|亲子|情侣|朋友|商务|独自|家庭|WiFi|停车|包厢|露天|空调|儿童|老字号|非遗|中华|地方|网红|必吃|百年|口碑|现点|秘制|限量|季节|配酒|人均|鲁菜|川菜|粤菜|湘菜|清真|东北|豫菜|苏菜|特色)$/)) {
+                        tasteCounts[t] = (tasteCounts[t] || 0) + 1;
+                    }
+                });
+            }
+        });
+        var tasteSorted = Object.keys(tasteCounts).sort(function(a,b){return tasteCounts[b]-tasteCounts[a];}).slice(0, 8);
+        
+        // 2. Price analysis
+        var priceBands = {'<10':0,'10-30':0,'30-60':0,'60-100':0,'100+':0};
+        foods.forEach(function(f) {
+            if (f.price <= 10) priceBands['<10']++;
+            else if (f.price <= 30) priceBands['10-30']++;
+            else if (f.price <= 60) priceBands['30-60']++;
+            else if (f.price <= 100) priceBands['60-100']++;
+            else priceBands['100+']++;
+        });
+        var maxPrice = Math.max.apply(null, Object.values(priceBands)) || 1;
+        
+        // 3. Category analysis
+        var catCounts = {};
+        foods.forEach(function(f) { catCounts[f.category] = (catCounts[f.category] || 0) + 1; });
+        var catSorted = Object.keys(catCounts).sort(function(a,b){return catCounts[b]-catCounts[a];}).slice(0, 5);
+        var maxCat = Math.max.apply(null, Object.values(catCounts)) || 1;
+
+        var html = '';
+
+        // Taste tags
+        html += '<div class="profile-section"><div class="profile-section-title">口味偏好</div><div class="profile-taste-cloud">';
+        tasteSorted.forEach(function(t) {
+            var size = Math.max(12, 12 + (tasteCounts[t] / tasteCounts[tasteSorted[0]]) * 10);
+            html += '<span class="profile-taste-tag" style="font-size:' + size + 'px;">' + t + '(' + tasteCounts[t] + ')</span>';
+        });
+        html += '</div></div>';
+
+        // Price bars
+        html += '<div class="profile-section"><div class="profile-section-title">价格区间</div>';
+        ['<10','10-30','30-60','60-100','100+'].forEach(function(b) {
+            var pct = Math.round((priceBands[b] / foods.length) * 100);
+            html += '<div class="profile-bar-row"><span class="profile-bar-label">' + (b === '<10' ? '<10元' : b === '100+' ? '100+元' : b + '元') + '</span>' +
+                '<div class="profile-bar"><div class="profile-bar-fill" style="width:' + pct + '%"></div></div>' +
+                '<span class="profile-bar-pct">' + pct + '%</span></div>';
+        });
+        html += '</div>';
+
+        // Category bars
+        html += '<div class="profile-section"><div class="profile-section-title">偏好品类</div>';
+        catSorted.forEach(function(c) {
+            var pct = Math.round((catCounts[c] / foods.length) * 100);
+            html += '<div class="profile-bar-row"><span class="profile-bar-label">' + c + '</span>' +
+                '<div class="profile-bar"><div class="profile-bar-fill" style="width:' + pct + '%"></div></div>' +
+                '<span class="profile-bar-pct">' + pct + '%</span></div>';
+        });
+        html += '</div>';
+
+        container.innerHTML = html;
+    }
+};
+
+var DailyTourManager = {
+    candidates: [],
+
+    generate: function() {
+        var self = this;
+        var favs = FavoriteManager.getAll();
+        var foods = favs.filter(function(f) { return f.favType === 'food'; });
+        var spots = favs.filter(function(f) { return f.favType === 'spot'; });
+        
+        // Determine preferred categories and price from favorites
+        var catPrefs = {};
+        var priceSum = 0;
+        foods.forEach(function(f) {
+            catPrefs[f.category] = (catPrefs[f.category] || 0) + 1;
+            priceSum += f.price;
+        });
+        var topCats = Object.keys(catPrefs).sort(function(a,b){return catPrefs[b]-catPrefs[a];}).slice(0, 3);
+        var avgPrice = foods.length > 0 ? priceSum / foods.length : 40;
+        
+        // Score all foods: match category preference + score
+        var scored = foodData.map(function(f) {
+            var catMatch = topCats.indexOf(f.category) >= 0 ? 0.3 : 0;
+            var priceMatch = Math.abs(f.price - avgPrice) < 20 ? 0.1 : 0;
+            var score = f.score / 5 * 0.4 + catMatch + priceMatch;
+            return { id: f.id, name: f.name, category: f.category, score: f.score, price: f.price, lng: f.lng, lat: f.lat, totalScore: score };
+        });
+        scored.sort(function(a,b){return b.totalScore - a.totalScore;});
+        
+        var topFoods = scored.slice(0, 20);
+        
+        // Find nearest high-score spot for each combination of 3 foods
+        var candidates = [];
+        var usedFoods = new Set();
+        for (var i = 0; i < topFoods.length && candidates.length < 5; i++) {
+            for (var j = i + 1; j < topFoods.length && candidates.length < 5; j++) {
+                for (var k = j + 1; k < topFoods.length && candidates.length < 5; k++) {
+                    var trio = [topFoods[i], topFoods[j], topFoods[k]];
+                    var key = trio.map(function(x){return x.id;}).sort().join(',');
+                    if (usedFoods.has(key)) continue;
+                    usedFoods.add(key);
+                    
+                    // Find nearest spot
+                    var centerLng = (trio[0].lng + trio[1].lng + trio[2].lng) / 3;
+                    var centerLat = (trio[0].lat + trio[1].lat + trio[2].lat) / 3;
+                    var nearest = null, nearestDist = Infinity;
+                    spotData.forEach(function(s) {
+                        var d = haversine(centerLng, centerLat, s.lng, s.lat);
+                        if (d < nearestDist) { nearestDist = d; nearest = s; }
+                    });
+                    if (!nearest) continue;
+                    
+                    var totalDist = 0;
+                    var prev = nearest;
+                    trio.forEach(function(f) {
+                        totalDist += haversine(prev.lng, prev.lat, f.lng, f.lat);
+                        prev = f;
+                    });
+                    
+                    if (totalDist > 50000) continue; // Skip >50km
+                    
+                    var avgScore = (trio[0].score + trio[1].score + trio[2].score) / 3;
+                    var routeScore = avgScore * 0.7 + (1 - totalDist / 50000) * 0.3;
+                    
+                    candidates.push({
+                        spot: nearest,
+                        foods: trio,
+                        totalDist: totalDist,
+                        routeScore: routeScore,
+                        avgScore: avgScore
+                    });
+                }
+            }
+        }
+        
+        candidates.sort(function(a,b){return b.routeScore - a.routeScore;});
+        this.candidates = candidates.slice(0, 3);
+        this.renderPanel();
+    },
+
+    renderPanel: function() {
+        var container = document.getElementById('dailyTourList');
+        if (!container) return;
+        if (this.candidates.length === 0) {
+            container.innerHTML = '<div class="profile-empty">收藏POI后可生成推荐</div>';
+            return;
+        }
+        
+        var best = this.candidates[0];
+        var html = '<div class="daily-tour-best">';
+        html += '<div class="daily-tour-name">' + best.spot.name + '周边美食游</div>';
+        html += '<div class="daily-tour-meta">评分 ' + best.avgScore.toFixed(1) + ' | 驾车约 ' + (best.totalDist/1000).toFixed(1) + 'km / ' + Math.round(best.totalDist/400) + 'min</div>';
+        html += '<div class="daily-tour-stops">';
+        html += '<div class="daily-tour-stop">1. ' + best.spot.name + ' (景点/&#9733;' + best.spot.score.toFixed(1) + ')</div>';
+        best.foods.forEach(function(f, i) {
+            html += '<div class="daily-tour-stop">' + (i+2) + '. ' + f.name + ' (' + f.category + '/&#9733;' + f.score.toFixed(1) + '/Y' + f.price + ')</div>';
+        });
+        html += '</div>';
+        html += '<button class="daily-tour-adopt" onclick="DailyTourManager.adopt(0)">采纳此路线</button>';
+        html += '</div>';
+        
+        if (this.candidates.length > 1) {
+            html += '<div class="daily-tour-alt-title">备选方案</div>';
+            for (var i = 1; i < this.candidates.length; i++) {
+                var alt = this.candidates[i];
+                html += '<div class="daily-tour-alt">';
+                html += '<span>' + alt.spot.name + '游</span>';
+                html += '<span>评分 ' + alt.avgScore.toFixed(1) + ' / ' + (alt.totalDist/1000).toFixed(0) + 'km</span>';
+                html += '<button class="daily-tour-adopt small" onclick="DailyTourManager.adopt(' + i + ')">采纳</button>';
+                html += '</div>';
+            }
+        }
+        
+        container.innerHTML = html;
+    },
+
+    adopt: function(index) {
+        var tour = this.candidates[index];
+        if (!tour) return;
+        // Set route start to the spot
+        var startSel = document.getElementById('routeStart');
+        if (startSel) {
+            for (var i = 0; i < startSel.options.length; i++) {
+                if (startSel.options[i].value === 'spot_' + tour.spot.id) {
+                    startSel.selectedIndex = i; break;
+                }
+            }
+        }
+        // Clear existing waypoints and set food waypoints
+        routeWaypoints = [];
+        tour.foods.forEach(function(f) {
+            routeWaypoints.push({ id: f.id, name: f.name, type: 'food', lng: f.lng, lat: f.lat });
+        });
+        renderWaypointList();
+        // Set end to last food
+        var endSel = document.getElementById('routeEnd');
+        if (endSel && tour.foods.length > 0) {
+            var last = tour.foods[tour.foods.length - 1];
+            for (var j = 0; j < endSel.options.length; j++) {
+                if (endSel.options[j].value === 'food_' + last.id) {
+                    endSel.selectedIndex = j; break;
+                }
+            }
+        }
     }
 };
 
@@ -321,7 +551,11 @@ async function loadData() {
         FavoriteManager.renderPanel();
         RankingManager.init();
         RankingManager.renderPanel();
+        ProfileManager.renderPanel();
+        DailyTourManager.generate();
         initHistory();
+        var refreshBtn = document.getElementById('btnRefreshTour');
+        if (refreshBtn) { refreshBtn.addEventListener('click', function() { ProfileManager.renderPanel(); DailyTourManager.generate(); }); }
         document.querySelectorAll('.header-tool-group').forEach(function(group) {
             var dropdown = group.querySelector('.header-dropdown');
             if (!dropdown) return;

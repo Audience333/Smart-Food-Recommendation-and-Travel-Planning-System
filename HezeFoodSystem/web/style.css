@@ -549,3 +549,30 @@ body {
 .ranking-info { flex:1;min-width:0; }
 .ranking-name { font-size:14px;color:#333;overflow:hidden;text-overflow:ellipsis;white-space:nowrap; }
 .ranking-meta { font-size:12px;color:#999; }
+
+.profile-empty { padding: 20px; text-align: center; color: #999; font-size: 13px; }
+.profile-section { margin-bottom: 12px; }
+.profile-section-title { font-size: 13px; font-weight: bold; color: #555; margin-bottom: 6px; }
+.profile-taste-cloud { display: flex; flex-wrap: wrap; gap: 6px; }
+.profile-taste-tag { color: #d32f2f; padding: 2px 4px; }
+.profile-bar-row { display: flex; align-items: center; gap: 8px; margin-bottom: 4px; font-size: 12px; }
+.profile-bar-label { width: 55px; color: #666; text-align: right; flex-shrink: 0; }
+.profile-bar { flex: 1; height: 12px; background: #eee; border-radius: 6px; overflow: hidden; }
+.profile-bar-fill { height: 100%; background: #d32f2f; border-radius: 6px; transition: width 0.3s; }
+.profile-bar-pct { width: 35px; color: #999; flex-shrink: 0; }
+
+.panel-action-btn { float: right; padding: 2px 8px; background: #f5f5f5; border: 1px solid #ddd; border-radius: 4px; font-size: 12px; cursor: pointer; }
+.panel-action-btn:hover { background: #e0e0e0; }
+
+.daily-tour-best { background: #fff3e0; border: 1px solid #ffe0b2; border-radius: 6px; padding: 10px; }
+.daily-tour-name { font-size: 14px; font-weight: bold; color: #e65100; margin-bottom: 4px; }
+.daily-tour-meta { font-size: 12px; color: #666; margin-bottom: 8px; }
+.daily-tour-stops { font-size: 13px; margin-bottom: 8px; }
+.daily-tour-stop { padding: 3px 0; color: #333; }
+.daily-tour-adopt { width: 100%; padding: 6px; background: #d32f2f; color: white; border: none; border-radius: 4px; font-size: 13px; cursor: pointer; }
+.daily-tour-adopt:hover { background: #b71c1c; }
+.daily-tour-adopt.small { width: auto; padding: 3px 10px; font-size: 12px; }
+.daily-tour-alt-title { font-size: 13px; font-weight: bold; color: #555; margin: 10px 0 6px; }
+.daily-tour-alt { display: flex; align-items: center; gap: 8px; padding: 6px 0; font-size: 13px; border-bottom: 1px solid #f0f0f0; }
+.daily-tour-alt span:nth-child(1) { flex: 1; }
+.daily-tour-alt span:nth-child(2) { color: #999; font-size: 12px; }
