@@ -246,8 +246,8 @@ var RankingManager = {
 
 var ProfileManager = {
     isEditing: false,
-    originalProfile: '',
     _editCounts: null,
+    _savedCounts: null,
 
     renderPanel: function() {
         var container = document.getElementById('profilePanel');
@@ -285,9 +285,11 @@ var ProfileManager = {
         }
         if (this.isEditing) {
             if (!this._editCounts) {
-                this._editCounts = JSON.parse(JSON.stringify(tasteCounts));
+                this._editCounts = JSON.parse(JSON.stringify(this._savedCounts || tasteCounts));
             }
             tasteCounts = this._editCounts;
+        } else if (this._savedCounts) {
+            tasteCounts = this._savedCounts;
         }
 
         var tasteSorted = Object.keys(tasteCounts).sort(function(a,b){return tasteCounts[b]-tasteCounts[a];}).slice(0, 8);
@@ -440,14 +442,40 @@ var ProfileManager = {
     enterEditMode: function() {
         this.isEditing = true;
         document.getElementById('btnEditProfile').style.display = 'none';
+        document.getElementById('btnSaveProfile').style.display = 'inline-block';
+        document.getElementById('btnCancelProfile').style.display = 'inline-block';
         document.getElementById('btnRestoreProfile').style.display = 'inline-block';
+        this.renderPanel();
+    },
+
+    saveProfile: function() {
+        this._savedCounts = JSON.parse(JSON.stringify(this._editCounts));
+        this.isEditing = false;
+        this._editCounts = null;
+        document.getElementById('btnEditProfile').style.display = 'inline-block';
+        document.getElementById('btnSaveProfile').style.display = 'none';
+        document.getElementById('btnCancelProfile').style.display = 'none';
+        document.getElementById('btnRestoreProfile').style.display = 'none';
+        this.renderPanel();
+    },
+
+    cancelProfile: function() {
+        this.isEditing = false;
+        this._editCounts = null;
+        document.getElementById('btnEditProfile').style.display = 'inline-block';
+        document.getElementById('btnSaveProfile').style.display = 'none';
+        document.getElementById('btnCancelProfile').style.display = 'none';
+        document.getElementById('btnRestoreProfile').style.display = 'none';
         this.renderPanel();
     },
 
     restoreProfile: function() {
         this.isEditing = false;
         this._editCounts = null;
+        this._savedCounts = null;
         document.getElementById('btnEditProfile').style.display = 'inline-block';
+        document.getElementById('btnSaveProfile').style.display = 'none';
+        document.getElementById('btnCancelProfile').style.display = 'none';
         document.getElementById('btnRestoreProfile').style.display = 'none';
         this.renderPanel();
     }
@@ -746,8 +774,12 @@ async function loadData() {
         DailyTourManager.generate();
         initHistory();
         var editBtn = document.getElementById('btnEditProfile');
+        var saveBtn = document.getElementById('btnSaveProfile');
+        var cancelBtn = document.getElementById('btnCancelProfile');
         var restoreBtn = document.getElementById('btnRestoreProfile');
         if (editBtn) editBtn.addEventListener('click', function() { ProfileManager.enterEditMode(); });
+        if (saveBtn) saveBtn.addEventListener('click', function() { ProfileManager.saveProfile(); });
+        if (cancelBtn) cancelBtn.addEventListener('click', function() { ProfileManager.cancelProfile(); });
         if (restoreBtn) restoreBtn.addEventListener('click', function() { ProfileManager.restoreProfile(); });
         var refreshBtn = document.getElementById('btnRefreshTour');
         if (refreshBtn) { refreshBtn.addEventListener('click', function() { DailyTourManager.generate(); }); }
