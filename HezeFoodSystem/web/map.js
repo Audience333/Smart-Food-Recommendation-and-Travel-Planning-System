@@ -335,10 +335,9 @@ var ProfileManager = {
         html += '<div class="profile-section"><div class="profile-section-title">口味偏好 ' + (this.isEditing ? '<span style="font-size:11px;color:#999;">(点击移除 / 下方添加)</span>' : '') + '</div><div class="profile-taste-cloud">';
         tasteSorted.forEach(function(t) {
             if (ProfileManager.isEditing) {
-                html += '<span class="profile-taste-tag editable" data-taste="' + t + '" style="font-size:' + Math.max(11, 11 + ((tasteCounts[t] || 0) / (tasteCounts[tasteSorted[0]] || 1)) * 5) + 'px;cursor:pointer;" title="点击移除">' + t + '(' + (tasteCounts[t] || 0) + ') ×</span>';
+                html += '<span class="profile-taste-tag editable" data-taste="' + t + '" style="font-size:13px;cursor:pointer;" title="点击移除">' + t + '(' + (tasteCounts[t] || 0) + ') x</span>';
             } else {
-                var size = Math.max(11, 11 + ((tasteCounts[t] || 0) / (tasteCounts[tasteSorted[0]] || 1)) * 5);
-                html += '<span class="profile-taste-tag" style="font-size:' + size + 'px;">' + t + '(' + (tasteCounts[t] || 0) + ')</span>';
+                html += '<span class="profile-taste-tag" style="font-size:13px;">' + t + '(' + (tasteCounts[t] || 0) + ')</span>';
             }
         });
         html += '</div>';
