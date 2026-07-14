@@ -23,6 +23,7 @@ var currentRoutePolylines = [];
 var currentRouteMarkers = [];
 var routeWaypoints = [];
 var routeMode = 'driving';
+var routeSortMode = 'time';
 
 var HEZE_CENTER = [115.477, 35.245];  // 菏泽市中心（基于真实数据重新计算）
 var AMAP_KEY = "647bb3e7a596c479b998f3e20a5a486a";
@@ -205,13 +206,16 @@ function showFoodMarkers() {
                 this.setContent(markerContent);
             });
 
-            marker.setMap(map);
             marker._foodData = food;
-            if (!toggleFoodVisible) { marker.setVisible(false); }
-            else {
-                var status = getOpenStatus(food.opentime);
-                if (status.cls === 'status-closed') marker.setVisible(false);
+            var shouldShow = toggleFoodVisible;
+            if (shouldShow) {
+                var openOnlyCheckbox = document.getElementById('toggleOpenOnly');
+                if (openOnlyCheckbox && openOnlyCheckbox.checked) {
+                    var status = getOpenStatus(food.opentime);
+                    if (status.cls === 'status-closed') shouldShow = false;
+                }
             }
+            if (shouldShow) marker.setMap(map);
             foodMarkers.push(marker);
         } catch (e) {
             console.warn('[Map] 美食标记失败:', food.name, e);
@@ -257,8 +261,7 @@ function showSpotMarkers() {
                 showSpotDetail(spot);
             });
 
-            marker.setMap(map);
-            if (!toggleSpotVisible) marker.setVisible(false);
+            if (toggleSpotVisible) marker.setMap(map);
             spotMarkers.push(marker);
         } catch (e) {
             console.warn('[Map] 景点标记失败:', spot.name, e);
@@ -338,11 +341,17 @@ function showFoodDetail(food) {
 
     infoWindow.open(map, [food.lng, food.lat]);
 
-    // 异步获取真实地址
-    getAddress(food.lng, food.lat, function (addr) {
-        var el = document.getElementById(addrId);
-        if (el) el.textContent = addr;
-    });
+    var addrEl = document.getElementById(addrId);
+    if (addrEl) {
+        if (food.address && food.address !== '-' && food.address !== '无法获取') {
+            addrEl.textContent = food.address;
+        } else {
+            getAddress(food.lng, food.lat, function (addr) {
+                var el2 = document.getElementById(addrId);
+                if (el2) el2.textContent = addr;
+            });
+        }
+    }
 }
 
 function showSpotDetail(spot) {
@@ -394,7 +403,7 @@ function showSpotDetail(spot) {
     infoWindow.open(map, [spot.lng, spot.lat]);
 
     // 如果已有地址缓存则直接显示，否则异步获取真实地址
-    if (!spot.address || spot.address === '') {
+    if (!spot.address || spot.address === '' || spot.address === '-' || spot.address === '无法获取') {
         getAddress(spot.lng, spot.lat, function (addr) {
             var el = document.getElementById(addrId);
             if (el) el.textContent = addr;
@@ -432,17 +441,13 @@ function autoFitView() {
 
 function initControls() {
     document.getElementById('toggleFood').addEventListener('change', function () {
+        if (toggleFoodVisible === this.checked) return;
         toggleFoodVisible = this.checked;
-        foodMarkers.forEach(function (m) {
-            if (!m._foodData) { m.setVisible(toggleFoodVisible); return; }
-            if (!toggleFoodVisible) { m.setVisible(false); return; }
-            var status = getOpenStatus(m._foodData.opentime);
-            m.setVisible(status.cls !== 'status-closed');
-        });
+        showFoodMarkers();
     });
     document.getElementById('toggleSpot').addEventListener('change', function () {
         toggleSpotVisible = this.checked;
-        spotMarkers.forEach(function (m) { m.setVisible(toggleSpotVisible); });
+        showSpotMarkers();
     });
 
     document.getElementById('btnZoomIn').addEventListener('click', function () {
@@ -458,15 +463,7 @@ function initControls() {
     var openOnlyEl = document.getElementById('toggleOpenOnly');
     if (openOnlyEl) {
         openOnlyEl.addEventListener('change', function() {
-            var showOnlyOpen = this.checked;
-            foodMarkers.forEach(function(m) {
-                if (!m._foodData) return;
-                if (showOnlyOpen && getOpenStatus(m._foodData.opentime).cls === 'status-closed') {
-                    m.setVisible(false);
-                } else {
-                    m.setVisible(toggleFoodVisible);
-                }
-            });
+            showFoodMarkers();
         });
     }
 }
@@ -535,12 +532,21 @@ function populateSelectOptions() {
 }
 
 function initRoutePlanner() {
-    var modeBtns = document.querySelectorAll('.route-mode-btn');
+    var modeBtns = document.querySelectorAll('.route-mode-btn[data-mode]');
     modeBtns.forEach(function(btn) {
         btn.addEventListener('click', function() {
             modeBtns.forEach(function(b) { b.classList.remove('active'); });
             this.classList.add('active');
             routeMode = this.dataset.mode;
+        });
+    });
+
+    var sortBtns = document.querySelectorAll('.route-mode-btn[data-sort]');
+    sortBtns.forEach(function(btn) {
+        btn.addEventListener('click', function() {
+            sortBtns.forEach(function(b) { b.classList.remove('active'); });
+            this.classList.add('active');
+            routeSortMode = this.dataset.sort;
         });
     });
 
@@ -831,10 +837,12 @@ function planRouteSegments(waypoints, index) {
     var from = waypoints[index];
     var to = waypoints[index + 1];
 
+    var strategyMap = { time: 0, distance: 2, toll: 1 };
+    var strategy = strategyMap[routeSortMode] || 0;
     var url = 'https://restapi.amap.com/v3/direction/' + routeMode +
               '?origin=' + from.lng + ',' + from.lat +
               '&destination=' + to.lng + ',' + to.lat +
-              '&key=' + AMAP_KEY + '&strategy=0&output=json';
+              '&key=' + AMAP_KEY + '&strategy=' + strategy + '&output=json';
 
     var xhr = new XMLHttpRequest();
     xhr.open('GET', url, true);
