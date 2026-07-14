@@ -206,10 +206,11 @@ function showFoodMarkers() {
             });
 
             marker.setMap(map);
-            if (!toggleFoodVisible) marker.setVisible(false);
-            var status = getOpenStatus(food.opentime);
-            if (status.cls === 'status-closed') {
-                marker.setOpacity(0.35);
+            marker._foodData = food;
+            if (!toggleFoodVisible) { marker.setVisible(false); }
+            else {
+                var status = getOpenStatus(food.opentime);
+                if (status.cls === 'status-closed') marker.setVisible(false);
             }
             foodMarkers.push(marker);
         } catch (e) {
@@ -412,7 +413,12 @@ function autoFitView() {
 function initControls() {
     document.getElementById('toggleFood').addEventListener('change', function () {
         toggleFoodVisible = this.checked;
-        foodMarkers.forEach(function (m) { m.setVisible(toggleFoodVisible); });
+        foodMarkers.forEach(function (m) {
+            if (!m._foodData) { m.setVisible(toggleFoodVisible); return; }
+            if (!toggleFoodVisible) { m.setVisible(false); return; }
+            var status = getOpenStatus(m._foodData.opentime);
+            m.setVisible(status.cls !== 'status-closed');
+        });
     });
     document.getElementById('toggleSpot').addEventListener('change', function () {
         toggleSpotVisible = this.checked;
@@ -433,10 +439,9 @@ function initControls() {
     if (openOnlyEl) {
         openOnlyEl.addEventListener('change', function() {
             var showOnlyOpen = this.checked;
-            foodMarkers.forEach(function(m, i) {
-                var food = foodData[i];
-                if (!food) return;
-                if (showOnlyOpen && getOpenStatus(food.opentime).cls === 'status-closed') {
+            foodMarkers.forEach(function(m) {
+                if (!m._foodData) return;
+                if (showOnlyOpen && getOpenStatus(m._foodData.opentime).cls === 'status-closed') {
                     m.setVisible(false);
                 } else {
                     m.setVisible(toggleFoodVisible);
@@ -549,7 +554,7 @@ function renderWaypointList() {
             '<option value="">选择途经点</option></select>' +
             '<span class="wp-up" data-index="' + i + '" style="cursor:pointer;padding:0 2px;color:#999;font-size:11px;">&#9650;</span>' +
             '<span class="wp-down" data-index="' + i + '" style="cursor:pointer;padding:0 2px;color:#999;font-size:11px;">&#9660;</span>' +
-            '<span class="wp-del" data-index="' + i + '" style="color:#d32f2f;cursor:pointer;font-weight:bold;padding:0 4px;">x</span>' +
+            '<span class="wp-del" data-index="' + i + '" style="color:#d32f2f;cursor:pointer;font-weight:bold;padding:0 6px;font-size:16px;line-height:1;">×</span>' +
             '</div>';
     });
     container.innerHTML = html;
