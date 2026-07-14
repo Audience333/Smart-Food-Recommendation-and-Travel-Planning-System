@@ -332,18 +332,39 @@ var ProfileManager = {
         var html = '';
 
         // Taste tags (editable or not)
-        html += '<div class="profile-section"><div class="profile-section-title">口味偏好 ' + (this.isEditing ? '<span style="font-size:11px;color:#999;">(点击移除 / 下方添加)</span>' : '') + '</div><div class="profile-taste-cloud">';
+        html += '<div class="profile-section"><div class="profile-section-title">口味偏好 ' + (this.isEditing ? '<span style="font-size:11px;color:#999;">(点击 +/- 调整 / 下拉添加)</span>' : '') + '</div><div class="profile-taste-cloud">';
         tasteSorted.forEach(function(t) {
+            var count = tasteCounts[t] || 0;
             if (ProfileManager.isEditing) {
-                html += '<span class="profile-taste-tag editable" data-taste="' + t + '" style="font-size:13px;cursor:pointer;" title="点击移除">' + t + '(' + (tasteCounts[t] || 0) + ') x</span>';
+                html += '<span class="profile-taste-tag editable" data-taste="' + t + '" style="display:inline-flex;align-items:center;gap:2px;font-size:13px;margin:2px;padding:3px 6px;background:#fff3e0;border:1px solid #ffcc80;border-radius:12px;">' +
+                    '<span class="taste-minus" data-taste="' + t + '" style="cursor:pointer;color:#d32f2f;font-weight:bold;padding:0 3px;">-</span>' +
+                    t + '(' + count + ')' +
+                    '<span class="taste-plus" data-taste="' + t + '" style="cursor:pointer;color:#4caf50;font-weight:bold;padding:0 3px;">+</span>' +
+                    '<span class="taste-del" data-taste="' + t + '" style="cursor:pointer;color:#999;font-size:11px;margin-left:2px;">x</span></span>';
             } else {
-                html += '<span class="profile-taste-tag" style="font-size:13px;">' + t + '(' + (tasteCounts[t] || 0) + ')</span>';
+                html += '<span class="profile-taste-tag" style="font-size:13px;">' + t + '(' + count + ')</span>';
             }
         });
         html += '</div>';
         if (this.isEditing) {
+            // Build list of all available taste tags from food data
+            var allTastes = new Set();
+            foodData.forEach(function(fd) {
+                if (fd.tags) fd.tags.forEach(function(tg) {
+                    var tc = String(tg).trim();
+                    tasteKeywords.forEach(function(kw) {
+                        if (tc.indexOf(kw) >= 0 || kw.indexOf(tc) >= 0) allTastes.add(kw);
+                    });
+                });
+            });
+            var tasteList = Array.from(allTastes).sort();
             html += '<div style="display:flex;gap:4px;margin-top:6px;">' +
-                '<input id="profileAddTaste" class="search-input" placeholder="添加口味标签" style="flex:1;padding:4px 8px;font-size:12px;">' +
+                '<select id="profileAddTaste" class="route-select-input" style="flex:1;padding:4px 6px;font-size:12px;">' +
+                '<option value="">选择标签添加</option>';
+            tasteList.forEach(function(tt) {
+                html += '<option value="' + tt + '">' + tt + '</option>';
+            });
+            html += '</select>' +
                 '<button id="btnProfileAddTaste" class="panel-action-btn" style="padding:4px 10px;">添加</button></div>';
         }
         html += '</div>';
@@ -371,8 +392,29 @@ var ProfileManager = {
         container.innerHTML = html;
 
         if (this.isEditing) {
-            container.querySelectorAll('.profile-taste-tag.editable').forEach(function(el) {
-                el.addEventListener('click', function() {
+            // +/- adjustment handlers
+            container.querySelectorAll('.taste-plus').forEach(function(el) {
+                el.addEventListener('click', function(e) { e.stopPropagation();
+                    var taste = this.dataset.taste;
+                    if (ProfileManager._editCounts) {
+                        ProfileManager._editCounts[taste] = (ProfileManager._editCounts[taste] || 0) + 1;
+                        ProfileManager.renderPanel();
+                    }
+                });
+            });
+            container.querySelectorAll('.taste-minus').forEach(function(el) {
+                el.addEventListener('click', function(e) { e.stopPropagation();
+                    var taste = this.dataset.taste;
+                    if (ProfileManager._editCounts && ProfileManager._editCounts[taste]) {
+                        ProfileManager._editCounts[taste]--;
+                        if (ProfileManager._editCounts[taste] <= 0) delete ProfileManager._editCounts[taste];
+                        ProfileManager.renderPanel();
+                    }
+                });
+            });
+            // Delete handler
+            container.querySelectorAll('.taste-del').forEach(function(el) {
+                el.addEventListener('click', function(e) { e.stopPropagation();
                     var taste = this.dataset.taste;
                     if (ProfileManager._editCounts && ProfileManager._editCounts[taste]) {
                         delete ProfileManager._editCounts[taste];
@@ -380,11 +422,12 @@ var ProfileManager = {
                     ProfileManager.renderPanel();
                 });
             });
+            // Add from select
             var addBtn = document.getElementById('btnProfileAddTaste');
-            var addInput = document.getElementById('profileAddTaste');
-            if (addBtn && addInput) {
+            var addSel = document.getElementById('profileAddTaste');
+            if (addBtn && addSel) {
                 addBtn.addEventListener('click', function() {
-                    var val = addInput.value.trim();
+                    var val = addSel.value;
                     if (val && ProfileManager._editCounts) {
                         ProfileManager._editCounts[val] = (ProfileManager._editCounts[val] || 0) + 1;
                         ProfileManager.renderPanel();
