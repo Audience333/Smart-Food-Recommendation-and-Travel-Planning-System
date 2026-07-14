@@ -25,6 +25,7 @@ var currentRouteMarkers = [];
 var routeWaypoints = [];
 var routeMode = 'driving';
 var routeSortMode = 'time';
+var currentInfoWindow = null;
 
 var HistoryManager = {
     stack: [], pointer: -1, maxSize: 50,
@@ -259,15 +260,18 @@ var ProfileManager = {
             return;
         }
 
-        // 1. Taste analysis using whitelist of known taste keywords
-        var tasteWhitelist = ['麻辣','酸辣','清淡','酱香','蒜蓉','原味','鲜香','五香','甜口','咸鲜','微辣','重辣','酸甜','孜然','鲜嫩','酥脆','软糯','筋道','Q弹','肥而不腻','入口即化','暖胃','滋补','开胃','清爽'];
+        // 1. Taste analysis — use known taste keyword list with fuzzy matching
+        var tasteKeywords = ['麻辣','酸辣','清淡','酱香','蒜蓉','原味','鲜香','五香','甜口','咸鲜','微辣','重辣','酸甜','孜然','鲜嫩','酥脆','软糯','筋道','Q弹','肥而不腻','入口即化','暖胃','滋补','开胃','清爽','咖喱','醇厚','鲜美','香辣','浓汤','清甜','酸甜','焦香','嫩滑'];
         var tasteCounts = {};
         foods.forEach(function(f) {
             if (f.tags) {
                 f.tags.forEach(function(t) {
-                    if (tasteWhitelist.indexOf(t) >= 0) {
-                        tasteCounts[t] = (tasteCounts[t] || 0) + 1;
-                    }
+                    var tClean = String(t).trim();
+                    tasteKeywords.forEach(function(kw) {
+                        if (tClean.indexOf(kw) >= 0 || kw.indexOf(tClean) >= 0) {
+                            tasteCounts[kw] = (tasteCounts[kw] || 0) + 1;
+                        }
+                    });
                 });
             }
         });
@@ -353,6 +357,14 @@ var DailyTourManager = {
         scored.sort(function(a,b){return b.totalScore - a.totalScore;});
         
         var topFoods = scored.slice(0, 20);
+        
+        // Shuffle for variety
+        for (var s = topFoods.length - 1; s > 0; s--) {
+            var r = Math.floor(Math.random() * (s + 1));
+            var temp = topFoods[s];
+            topFoods[s] = topFoods[r];
+            topFoods[r] = temp;
+        }
         
         // Find nearest high-score spot for each combination of 3 foods
         var candidates = [];
@@ -518,6 +530,14 @@ function loadMap() {
         map.addControl(new AMap.ToolBar({ position: 'LT' }));
         map.addControl(new AMap.Scale());
 
+        map.on('zoomend', function() {
+            var zoom = map.getZoom();
+            if (zoom < 10 && currentInfoWindow) {
+                currentInfoWindow.close();
+                currentInfoWindow = null;
+            }
+        });
+
         // 初始化逆地理编码
         geocoder = new AMap.Geocoder({ city: '菏泽' });
 
@@ -577,7 +597,7 @@ async function loadData() {
         DailyTourManager.generate();
         initHistory();
         var refreshBtn = document.getElementById('btnRefreshTour');
-        if (refreshBtn) { refreshBtn.addEventListener('click', function() { ProfileManager.renderPanel(); DailyTourManager.generate(); }); }
+        if (refreshBtn) { refreshBtn.addEventListener('click', function() { DailyTourManager.generate(); }); }
         document.querySelectorAll('.header-tool-group').forEach(function(group) {
             var dropdown = group.querySelector('.header-dropdown');
             if (!dropdown) return;
@@ -824,6 +844,8 @@ function showFoodDetail(food) {
     });
 
     infoWindow.open(map, [food.lng, food.lat]);
+    if (currentInfoWindow) currentInfoWindow.close();
+    currentInfoWindow = infoWindow;
 
     setTimeout(function() {
         var se = document.querySelector('.fav-btn[data-poi-id="' + food.id + '"]');
@@ -896,6 +918,8 @@ function showSpotDetail(spot) {
     });
 
     infoWindow.open(map, [spot.lng, spot.lat]);
+    if (currentInfoWindow) currentInfoWindow.close();
+    currentInfoWindow = infoWindow;
 
     setTimeout(function() {
         var se = document.querySelector('.fav-btn[data-poi-id="' + spot.id + '"]');
