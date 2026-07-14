@@ -322,17 +322,16 @@ async function loadData() {
         RankingManager.init();
         RankingManager.renderPanel();
         initHistory();
-        document.querySelectorAll('.floating-panel').forEach(function(panel) {
-            var trigger = panel.querySelector('.floating-panel-trigger');
-            var body = panel.querySelector('.floating-panel-body');
-            if (trigger && body) {
-                trigger.addEventListener('click', function(e) { e.stopPropagation(); 
-                    body.style.display = body.style.display === 'block' ? 'none' : 'block'; 
-                });
-            }
+        document.querySelectorAll('.header-tool-group').forEach(function(group) {
+            var dropdown = group.querySelector('.header-dropdown');
+            if (!dropdown) return;
+            group.addEventListener('click', function(e) {
+                e.stopPropagation();
+                dropdown.style.display = dropdown.style.display === 'block' ? 'none' : 'block';
+            });
         });
         document.addEventListener('click', function() {
-            document.querySelectorAll('.floating-panel-body').forEach(function(b) { b.style.display = 'none'; });
+            document.querySelectorAll('.header-dropdown').forEach(function(d) { d.style.display = 'none'; });
         });
 
     if (map) {
@@ -1281,14 +1280,12 @@ function initHistory() {
     
     if (undoBtn) undoBtn.addEventListener('click', function() { HistoryManager.undo(); });
     if (redoBtn) redoBtn.addEventListener('click', function() { HistoryManager.redo(); });
-    if (clearBtn) clearBtn.addEventListener('click', function() { HistoryManager.clear(); });
+    if (clearBtn) clearBtn.addEventListener('click', function(e) { e.stopPropagation(); HistoryManager.clear(); });
     
     if (trigger && dropdown) {
         trigger.addEventListener('click', function(e) { e.stopPropagation();
             dropdown.style.display = dropdown.style.display === 'block' ? 'none' : 'block';
         });
-        trigger.addEventListener('mouseenter', function() { dropdown.style.display = 'block'; });
-        dropdown.addEventListener('mouseleave', function() { dropdown.style.display = 'none'; });
         dropdown.addEventListener('click', function(e) {
             var item = e.target.closest('.history-item'); if (!item) return;
             var idx = parseInt(item.dataset.index);

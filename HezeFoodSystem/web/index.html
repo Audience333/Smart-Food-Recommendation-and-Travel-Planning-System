@@ -9,8 +9,40 @@
 </head>
 <body>
     <div class="header">
-        <h1>菏泽美食推荐与城市漫游规划系统</h1>
-        <p>基于 C++ 数据结构 + 高德地图可视化</p>
+        <div class="header-top">
+            <div class="header-title">
+                <h1>菏泽美食推荐与城市漫游规划系统</h1>
+                <p>基于 C++ 数据结构 + 高德地图可视化</p>
+            </div>
+            <div class="header-tools">
+                <div class="header-tool-group">
+                    <button id="btnHistoryUndo" class="header-tool-btn">&#x2190; 撤销</button>
+                    <button id="btnHistoryRedo" class="header-tool-btn">重做 &#x2192;</button>
+                    <span class="header-tool-btn header-dropdown-trigger" id="btnHistoryDropdown">&#x25BC; 历史</span>
+                    <div id="historyDropdown" class="header-dropdown" style="display:none;">
+                        <div class="header-dropdown-header"><span>操作历史</span><span id="btnHistoryClear" class="header-dropdown-clear">清空</span></div>
+                        <div id="historyDropdownList" class="header-dropdown-list"></div>
+                    </div>
+                </div>
+                <div class="header-tool-group header-dropdown-trigger" id="favoritesPanel">
+                    <span class="header-tool-btn">&#9733; 收藏 <span id="favoritesCount">(0)</span></span>
+                    <div class="header-dropdown" style="display:none;">
+                        <div id="favoritesList" class="header-dropdown-list"><div class="favorites-empty">暂无收藏</div></div>
+                    </div>
+                </div>
+                <div class="header-tool-group header-dropdown-trigger" id="rankingsPanel">
+                    <span class="header-tool-btn">排行</span>
+                    <div class="header-dropdown" style="display:none;">
+                        <div class="ranking-tabs">
+                            <span class="ranking-tab active" data-tab="popular">人气</span>
+                            <span class="ranking-tab" data-tab="value">性价比</span>
+                            <span class="ranking-tab" data-tab="favorites">收藏</span>
+                        </div>
+                        <div id="rankingList" class="ranking-list"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
     </div>
 
     <div class="container">
@@ -118,35 +150,8 @@
 
         <div class="map-container">
             <div id="map"></div>
-            <div class="top-floating-bar">
-                <div class="history-controls">
-                    <button id="btnHistoryUndo" class="history-btn">&#x2190; 撤销</button>
-                    <button id="btnHistoryRedo" class="history-btn">重做 &#x2192;</button>
-                    <button id="btnHistoryDropdown" class="history-btn">&#x25BC; 历史</button>
-                    <div id="historyDropdown" class="history-dropdown" style="display:none;">
-                        <div class="history-dropdown-header"><span>操作历史</span><span id="btnHistoryClear" class="history-clear">清空</span></div>
-                        <div id="historyDropdownList" class="history-dropdown-list"></div>
-                    </div>
-                </div>
-                <div class="floating-panel" id="favoritesPanel">
-                    <div class="floating-panel-trigger">&#9733; 收藏 <span id="favoritesCount">(0)</span></div>
-                    <div class="floating-panel-body" style="display:none;">
-                        <div id="favoritesList" class="favorites-list"><div class="favorites-empty">暂无收藏</div></div>
-                    </div>
-                </div>
-                <div class="floating-panel" id="rankingsPanel">
-                    <div class="floating-panel-trigger">排行</div>
-                    <div class="floating-panel-body" style="display:none;">
-                        <div class="ranking-tabs">
-                            <span class="ranking-tab active" data-tab="popular">人气</span>
-                            <span class="ranking-tab" data-tab="value">性价比</span>
-                            <span class="ranking-tab" data-tab="favorites">收藏</span>
-                        </div>
-                        <div id="rankingList" class="ranking-list"></div>
-                    </div>
-                </div>
-            </div>
-            <div class="map-controls">
+
+<div class="map-controls">
                 <button id="btnZoomIn" title="放大">+</button>
                 <button id="btnZoomOut" title="缩小">-</button>
                 <button id="btnReset" title="重置视图">R</button>
