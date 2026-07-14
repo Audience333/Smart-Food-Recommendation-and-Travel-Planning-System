@@ -25,6 +25,198 @@ var routeWaypoints = [];
 var routeMode = 'driving';
 var routeSortMode = 'time';
 
+var HistoryManager = {
+    stack: [], pointer: -1, maxSize: 50,
+    push: function(type, data) {
+        if (this.pointer < this.stack.length - 1) { this.stack = this.stack.slice(0, this.pointer + 1); }
+        this.stack.push({ type: type, data: data, time: new Date().toLocaleTimeString('zh-CN', {hour:'2-digit',minute:'2-digit'}) });
+        if (this.stack.length > this.maxSize) this.stack.shift();
+        this.pointer = this.stack.length - 1;
+        this.updateUI();
+    },
+    undo: function() {
+        if (!this.canUndo()) return;
+        var item = this.stack[this.pointer]; this.pointer--;
+        this._applyReverse(item); this.updateUI();
+    },
+    redo: function() {
+        if (!this.canRedo()) return;
+        this.pointer++;
+        var item = this.stack[this.pointer];
+        this._applyForward(item); this.updateUI();
+    },
+    canUndo: function() { return this.pointer >= 0; },
+    canRedo: function() { return this.pointer < this.stack.length - 1; },
+    _applyReverse: function(item) {
+        switch(item.type) {
+            case 'filter':
+                if (item.data.prevCategories) { activeCategories = new Set(item.data.prevCategories); showFoodMarkers(); generateCategoryFilters(); }
+                break;
+            case 'search':
+                var si = document.getElementById('searchInput'); if (si) si.value = '';
+                var sr = document.getElementById('searchResults'); if (sr) sr.style.display = 'none';
+                if (map) { foodMarkers.forEach(function(m) { m.setOpacity(1); }); spotMarkers.forEach(function(m) { m.setOpacity(1); }); }
+                break;
+            case 'fav_add':
+                FavoriteManager.remove(item.data.id, item.data.type); break;
+            case 'fav_del':
+                FavoriteManager.add({ id: item.data.id, type: item.data.type, name: item.data.name }); break;
+            case 'route':
+                clearRoute(); autoFitView(); break;
+            case 'view':
+                if (map) map.clearInfoWindow(); break;
+        }
+        RankingManager.refresh();
+    },
+    _applyForward: function(item) {
+        switch(item.type) {
+            case 'filter':
+                if (item.data.newCategories) { activeCategories = new Set(item.data.newCategories); showFoodMarkers(); generateCategoryFilters(); }
+                break;
+            case 'fav_add':
+                FavoriteManager.add({ id: item.data.id, type: item.data.type, name: item.data.name }); break;
+            case 'fav_del':
+                FavoriteManager.remove(item.data.id, item.data.type); break;
+            case 'view':
+                if (map && item.data.lng) { map.setZoomAndCenter(16, [item.data.lng, item.data.lat]); }
+                break;
+        }
+        RankingManager.refresh();
+    },
+    updateUI: function() {
+        var ub = document.getElementById('btnHistoryUndo'); if (ub) ub.style.opacity = this.canUndo() ? '1' : '0.4';
+        var rb = document.getElementById('btnHistoryRedo'); if (rb) rb.style.opacity = this.canRedo() ? '1' : '0.4';
+        this._renderDropdown();
+    },
+    _renderDropdown: function() {
+        var list = document.getElementById('historyDropdownList'); if (!list) return;
+        var html = '';
+        for (var i = this.stack.length - 1; i >= 0; i--) {
+            var item = this.stack[i];
+            var m = i === this.pointer ? '&#9654;' : (i > this.pointer ? '&#9679;' : '&#9675;');
+            var cls = i === this.pointer ? 'history-current' : (i > this.pointer ? 'history-done' : 'history-undone');
+            var labels = { view:'查看', filter:'筛选', search:'搜索', fav_add:'收藏', fav_del:'取消收藏', route:'路线' };
+            html += '<div class="history-item '+cls+'" data-index="'+i+'"><span class="history-marker">'+m+'</span><span class="history-time">'+item.time+'</span><span class="history-label">'+ (labels[item.type]||item.type) +'</span></div>';
+        }
+        list.innerHTML = html || '<div class="history-empty">暂无操作记录</div>';
+    },
+    clear: function() { this.stack = []; this.pointer = -1; this.updateUI(); }
+};
+
+var FavoriteManager = {
+    items: [], storageKey: 'heze_favorites',
+    init: function() { this.load(); },
+    add: function(poi) {
+        if (this.isFavorite(poi.id, poi.type)) return;
+        this.items.push({ id: poi.id, type: poi.type, name: poi.name, addedAt: Date.now() });
+        this.save();
+        HistoryManager.push('fav_add', { id: poi.id, type: poi.type, name: poi.name });
+        this.renderPanel();
+        RankingManager.refresh();
+        if (typeof showFoodMarkers === 'function') showFoodMarkers();
+        if (typeof showSpotMarkers === 'function') showSpotMarkers();
+    },
+    remove: function(id, type) {
+        var item = this.items.find(function(f) { return f.id === id && f.type === type; });
+        this.items = this.items.filter(function(f) { return !(f.id === id && f.type === type); });
+        this.save();
+        if (item) HistoryManager.push('fav_del', { id: id, type: type, name: item.name });
+        this.renderPanel();
+        RankingManager.refresh();
+        if (typeof showFoodMarkers === 'function') showFoodMarkers();
+        if (typeof showSpotMarkers === 'function') showSpotMarkers();
+    },
+    isFavorite: function(id, type) { return this.items.some(function(f) { return f.id === id && f.type === type; }); },
+    getAll: function() {
+        var self = this;
+        return this.items.map(function(f) {
+            var data = f.type === 'food' ? foodData.find(function(x) { return x.id === f.id; }) :
+                       spotData.find(function(x) { return x.id === f.id; });
+            return data ? Object.assign({}, data, { favType: f.type, addedAt: f.addedAt }) : null;
+        }).filter(function(x) { return x !== null; });
+    },
+    save: function() {
+        var d = this.items.map(function(f) { return { id: f.id, type: f.type, addedAt: f.addedAt }; });
+        try { localStorage.setItem(this.storageKey, JSON.stringify(d)); } catch(e) {}
+    },
+    load: function() {
+        try { var r = localStorage.getItem(this.storageKey); if (r) this.items = JSON.parse(r); } catch(e) { this.items = []; }
+    },
+    renderPanel: function() {
+        var container = document.getElementById('favoritesList'); if (!container) return;
+        var favs = this.getAll();
+        var countEl = document.getElementById('favoritesCount'); if (countEl) countEl.textContent = '(' + favs.length + ')';
+        if (favs.length === 0) {
+            container.innerHTML = '<div class="favorites-empty">暂无收藏</div>';
+        } else {
+            var html = '';
+            favs.forEach(function(f) {
+                var isFood = f.favType === 'food';
+                var color = isFood ? (CATEGORY_COLORS[f.category] || CATEGORY_COLORS.default) : '#1565c0';
+                var icon = isFood ? f.name.charAt(0) : '景';
+                var sub = isFood ? f.score.toFixed(1) + '分 / Y' + f.price : f.type;
+                html += '<div class="favorite-item" data-lng="'+f.lng+'" data-lat="'+f.lat+'" data-id="'+f.id+'" data-type="'+f.favType+'">' +
+                    '<div class="favorite-icon" style="background:'+color+'">'+icon+'</div>' +
+                    '<div class="favorite-info"><div class="favorite-name">'+f.name+'</div><div class="favorite-meta">'+sub+'</div></div>' +
+                    '<span class="fav-star faved" data-poi-id="'+f.id+'" data-poi-type="'+f.favType+'">&#9733;</span></div>';
+            });
+            container.innerHTML = html;
+            container.querySelectorAll('.favorite-item').forEach(function(el) {
+                el.addEventListener('click', function(e) {
+                    if (e.target.classList.contains('fav-star')) return;
+                    var lng = parseFloat(this.dataset.lng), lat = parseFloat(this.dataset.lat);
+                    if (map) map.setZoomAndCenter(16, [lng, lat]);
+                });
+            });
+            container.querySelectorAll('.fav-star').forEach(function(el) {
+                el.addEventListener('click', function(e) { e.stopPropagation();
+                    FavoriteManager.remove(parseInt(this.dataset.poiId), this.dataset.poiType); });
+            });
+        }
+    }
+};
+
+var RankingManager = {
+    currentTab: 'popular',
+    getPopular: function() { return foodData.slice().sort(function(a,b){return b.score - a.score;}); },
+    getValue: function() {
+        return foodData.slice().sort(function(a,b){
+            return (b.score/Math.log(b.price+1)) - (a.score/Math.log(a.price+1));
+        });
+    },
+    getFavRanking: function() {
+        var fc = {};
+        FavoriteManager.items.forEach(function(f){ if(f.type==='food') fc[f.id]=(fc[f.id]||0)+1; });
+        return foodData.slice().sort(function(a,b){
+            var fa=fc[a.id]||0, fb=fc[b.id]||0;
+            if(fb!==fa) return fb-fa; return b.score-a.score;
+        });
+    },
+    refresh: function() { this.renderPanel(); },
+    renderPanel: function() {
+        var list = document.getElementById('rankingList'); if(!list) return;
+        var ranking = this.currentTab==='popular' ? this.getPopular() : (this.currentTab==='value' ? this.getValue() : this.getFavRanking());
+        var medals = ['&#129351;','&#129352;','&#129353;'];
+        var html = '';
+        ranking.slice(0,10).forEach(function(f,i){
+            var rankHtml = i<3 ? '<span style="font-size:18px;">'+medals[i]+'</span>' : '<span class="ranking-num">'+(i+1)+'</span>';
+            var isFav = FavoriteManager.isFavorite(f.id,'food');
+            html += '<div class="ranking-item" data-lng="'+f.lng+'" data-lat="'+f.lat+'"><div class="ranking-rank">'+rankHtml+'</div>' +
+                '<div class="ranking-info"><div class="ranking-name">'+f.name+(isFav?' &#9733;':'')+'</div>' +
+                '<div class="ranking-meta">'+f.score.toFixed(1)+'分 / Y'+f.price+' / '+f.category+'</div></div></div>';
+        });
+        list.innerHTML = html;
+        list.querySelectorAll('.ranking-item').forEach(function(el){ el.addEventListener('click',function(){
+            map.setZoomAndCenter(16,[parseFloat(this.dataset.lng),parseFloat(this.dataset.lat)]); }); });
+    },
+    init: function() {
+        var self = this;
+        document.querySelectorAll('.ranking-tab').forEach(function(tab){ tab.addEventListener('click',function(){
+            document.querySelectorAll('.ranking-tab').forEach(function(t){t.classList.remove('active');});
+            this.classList.add('active'); self.currentTab = this.dataset.tab; self.renderPanel(); }); });
+    }
+};
+
 var HEZE_CENTER = [115.477, 35.245];  // 菏泽市中心（基于真实数据重新计算）
 var AMAP_KEY = "647bb3e7a596c479b998f3e20a5a486a";
 
@@ -124,6 +316,11 @@ async function loadData() {
         initSearch();
         populateSelectOptions();
         initRoutePlanner();
+        FavoriteManager.init();
+        FavoriteManager.renderPanel();
+        RankingManager.init();
+        RankingManager.renderPanel();
+        initHistory();
 
     if (map) {
         if (foodData.length > 0) showFoodMarkers();
@@ -184,6 +381,10 @@ function showFoodMarkers() {
             '">' +
             displayChar +
             '</div>';
+
+        if (FavoriteManager.isFavorite(food.id, 'food')) {
+            markerContent = markerContent.replace('border:2px solid white', 'border:3px solid #ffd700');
+        }
 
         try {
             var marker = new AMap.Marker({
@@ -247,6 +448,10 @@ function showSpotMarkers() {
             '">' +
             '<span style="transform:rotate(-45deg);">景</span>' +
             '</div>';
+
+        if (FavoriteManager.isFavorite(spot.id, 'spot')) {
+            markerContent = markerContent.replace('border:2px solid white', 'border:3px solid #ffd700');
+        }
 
         try {
             var marker = new AMap.Marker({
@@ -317,10 +522,14 @@ function showFoodDetail(food) {
         statusBar = '<div style="font-size:12px;margin-bottom:6px;color:' + (s.cls === 'status-open' ? '#4caf50' : '#999') + ';">' +
             (s.cls === 'status-open' ? '●' : '○') + ' ' + s.text + ' · ' + food.opentime + '</div>';
     }
+    HistoryManager.push('view', { poiId: food.id, poiType: 'food', lng: food.lng, lat: food.lat, poiName: food.name });
+    var isFav = FavoriteManager.isFavorite(food.id, 'food');
+    var starHtml = '<span class="fav-star ' + (isFav ? 'faved' : '') + '" data-poi-id="' + food.id + '" data-poi-type="food" style="cursor:pointer;float:right;font-size:20px;color:' + (isFav ? '#ff9800' : '#ccc') + ';">' + (isFav ? '&#9733;' : '&#9734;') + '</span>';
     var html =
         '<div class="info-window">' +
         photosHtml +
         statusBar +
+        starHtml +
         '<h4 style="border-color:' + color + '">' + icon + ' ' + food.name + '</h4>' +
         '<div class="info-row"><span class="info-label">评分</span>' +
         '<span class="info-score" style="color:#ff9800;">' + stars + ' ' + food.score.toFixed(1) + '</span></div>' +
@@ -341,6 +550,13 @@ function showFoodDetail(food) {
 
     infoWindow.open(map, [food.lng, food.lat]);
 
+    setTimeout(function() {
+        var se = document.querySelector('.fav-star[data-poi-id="' + food.id + '"][data-poi-type="food"]');
+        if (se) { se.addEventListener('click', function(e) { e.stopPropagation();
+            if (FavoriteManager.isFavorite(food.id, 'food')) FavoriteManager.remove(food.id, 'food');
+            else FavoriteManager.add({ id: food.id, type: 'food', name: food.name }); }); }
+    }, 100);
+
     var addrEl = document.getElementById(addrId);
     if (addrEl) {
         if (food.address && food.address !== '-' && food.address !== '无法获取') {
@@ -355,6 +571,7 @@ function showFoodDetail(food) {
 }
 
 function showSpotDetail(spot) {
+    HistoryManager.push('view', { poiId: spot.id, poiType: 'spot', lng: spot.lng, lat: spot.lat, poiName: spot.name });
     var stars = '';
     var fullStars = Math.floor(spot.score);
     for (var i = 0; i < fullStars; i++) stars += '★';
@@ -378,9 +595,12 @@ function showSpotDetail(spot) {
         photosHtml += '</div>';
     }
 
+    var isFav = FavoriteManager.isFavorite(spot.id, 'spot');
+    var starHtml = '<span class="fav-star ' + (isFav ? 'faved' : '') + '" data-poi-id="' + spot.id + '" data-poi-type="spot" style="cursor:pointer;float:right;font-size:20px;color:' + (isFav ? '#ff9800' : '#ccc') + ';">' + (isFav ? '&#9733;' : '&#9734;') + '</span>';
     var html =
         '<div class="info-window">' +
         photosHtml +
+        starHtml +
         '<h4 style="color:#1565c0;border-color:#1565c0;">[景点] ' + spot.name + '</h4>' +
         '<div class="info-row"><span class="info-label">类型</span><span>' + spot.type + '</span></div>' +
         '<div class="info-row"><span class="info-label">评分</span>' +
@@ -401,6 +621,13 @@ function showSpotDetail(spot) {
     });
 
     infoWindow.open(map, [spot.lng, spot.lat]);
+
+    setTimeout(function() {
+        var se = document.querySelector('.fav-star[data-poi-id="' + spot.id + '"][data-poi-type="spot"]');
+        if (se) { se.addEventListener('click', function(e) { e.stopPropagation();
+            if (FavoriteManager.isFavorite(spot.id, 'spot')) FavoriteManager.remove(spot.id, 'spot');
+            else FavoriteManager.add({ id: spot.id, type: 'spot', name: spot.name }); }); }
+    }, 100);
 
     // 如果已有地址缓存则直接显示，否则异步获取真实地址
     if (!spot.address || spot.address === '' || spot.address === '-' || spot.address === '无法获取') {
@@ -488,14 +715,17 @@ function generateCategoryFilters() {
     container.querySelectorAll('.category-tag').forEach(function (tag) {
         tag.addEventListener('click', function () {
             var cat = this.dataset.category;
+            var prevCats = Array.from(activeCategories);
             if (cat === 'all') {
                 activeCategories.clear();
                 container.querySelectorAll('.category-tag').forEach(function (t) { t.classList.remove('active'); });
                 this.classList.add('active');
+                HistoryManager.push('filter', { prevCategories: prevCats, newCategories: Array.from(activeCategories) });
             } else {
                 this.classList.toggle('active');
                 if (activeCategories.has(cat)) activeCategories.delete(cat);
                 else activeCategories.add(cat);
+                HistoryManager.push('filter', { prevCategories: prevCats, newCategories: Array.from(activeCategories) });
 
                 var allTag = container.querySelector('[data-category="all"]');
                 if (activeCategories.size === 0) allTag.classList.add('active');
@@ -660,6 +890,8 @@ function performSearch() {
         return;
     }
 
+    HistoryManager.push('search', { query: query, searchType: searchType });
+
     var results = [];
 
     if (searchType === 'all' || searchType === 'food') {
@@ -799,6 +1031,7 @@ function executeRoutePlan() {
     }
 
     clearRoute();
+    HistoryManager.push('route', {});
     document.getElementById('routeDetail').style.display = 'block';
     document.getElementById('routeSummary').innerHTML = '<div class="route-loading">路线规划中...</div>';
     document.getElementById('routeSegments').innerHTML = '';
@@ -994,6 +1227,26 @@ function renderRouteSummary() {
         if (allPoints.length > 0) {
             map.setFitView(allPoints, false, [80, 80, 80, 380]);
         }
+    }
+}
+
+// ==================== 历史管理器 UI ====================
+
+function initHistory() {
+    document.getElementById('btnHistoryUndo').addEventListener('click', function() { HistoryManager.undo(); });
+    document.getElementById('btnHistoryRedo').addEventListener('click', function() { HistoryManager.redo(); });
+    document.getElementById('btnHistoryClear').addEventListener('click', function() { HistoryManager.clear(); });
+    var dropdown = document.getElementById('historyDropdown');
+    var trigger = document.getElementById('btnHistoryDropdown');
+    if (trigger && dropdown) {
+        trigger.addEventListener('mouseenter', function() { dropdown.style.display = 'block'; });
+        dropdown.addEventListener('mouseleave', function() { dropdown.style.display = 'none'; });
+        dropdown.addEventListener('click', function(e) {
+            var item = e.target.closest('.history-item'); if (!item) return;
+            var idx = parseInt(item.dataset.index);
+            while (HistoryManager.pointer > idx) HistoryManager.undo();
+            while (HistoryManager.pointer < idx) HistoryManager.redo();
+        });
     }
 }
 
