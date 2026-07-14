@@ -1075,7 +1075,7 @@ function executeRoutePlan() {
     document.getElementById('routeSummary').innerHTML = '<div class="route-loading">路线规划中...</div>';
     document.getElementById('routeSegments').innerHTML = '';
 
-    window._routeSegments = [];
+    window._routeSegments = new Array(allWaypoints.length - 1);
     planRouteSegments(allWaypoints, 0);
 }
 
@@ -1201,7 +1201,7 @@ function renderRouteSegment(segment, index) {
     }
 
     if (!window._routeSegments) window._routeSegments = [];
-    window._routeSegments.push(segment);
+    window._routeSegments[index] = segment;
 }
 
 function renderRouteSegmentFallback(from, to, index) {
@@ -1220,7 +1220,7 @@ function renderRouteSegmentFallback(from, to, index) {
     currentRoutePolylines.push(line);
 
     if (!window._routeSegments) window._routeSegments = [];
-    window._routeSegments.push(segment);
+    window._routeSegments[index] = segment;
 }
 
 function haversine(lng1, lat1, lng2, lat2) {
@@ -1236,7 +1236,9 @@ function haversine(lng1, lat1, lng2, lat2) {
 function renderRouteSummary() {
     if (!window._routeSegments || window._routeSegments.length === 0) return;
     var totalDist = 0, totalTime = 0, totalTolls = 0;
-    window._routeSegments.forEach(function(s) { totalDist += s.distance; totalTime += s.duration; totalTolls += s.tolls; });
+    window._routeSegments.forEach(function(s) { 
+        if (s) { totalDist += s.distance; totalTime += s.duration; totalTolls += s.tolls; }
+    });
 
     var sm = document.getElementById('routeSummary');
     var summaryHtml = '';
@@ -1247,9 +1249,10 @@ function renderRouteSummary() {
 
     var segHtml = '';
     window._routeSegments.forEach(function(s, i) {
+        if (!s) return;
         segHtml += '<div class="route-segment">' +
             '<div class="route-segment-header">' + (i + 1) + '. ' + s.from + ' - ' + s.to + '</div>' +
-            '<div class="route-segment-detail">距离 ' + (s.distance / 1000).toFixed(1) + 'km / 时间 ' + Math.round(s.duration / 60) + '分钟</div>' +
+            '<div class="route-segment-detail">距离 ' + (s.distance / 1000).toFixed(1) + 'km / 时间 ' + Math.round(s.duration / 60) + 'min</div>' +
             (routeMode === 'driving' && s.tolls > 0 ? '<div class="route-segment-toll">过路费 Y' + s.tolls + '</div>' : '') +
             '</div>';
     });

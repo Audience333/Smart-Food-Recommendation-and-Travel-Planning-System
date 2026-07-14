@@ -18,20 +18,20 @@
                 <div class="header-tool-group">
                     <button id="btnHistoryUndo" class="header-tool-btn">&#x2190; 撤销</button>
                     <button id="btnHistoryRedo" class="header-tool-btn">重做 &#x2192;</button>
-                    <span class="header-tool-btn header-dropdown-trigger" id="btnHistoryDropdown">&#x25BC; 历史</span>
+                    <button class="header-tool-btn" id="btnHistoryDropdown">&#x25BC; 历史</button>
                     <div id="historyDropdown" class="header-dropdown" style="display:none;">
                         <div class="header-dropdown-header"><span>操作历史</span><span id="btnHistoryClear" class="header-dropdown-clear">清空</span></div>
                         <div id="historyDropdownList" class="header-dropdown-list"></div>
                     </div>
                 </div>
                 <div class="header-tool-group header-dropdown-trigger" id="favoritesPanel">
-                    <span class="header-tool-btn">&#9733; 收藏 <span id="favoritesCount">(0)</span></span>
+                    <button class="header-tool-btn">&#9733; 收藏 <span id="favoritesCount">(0)</span></button>
                     <div class="header-dropdown" style="display:none;">
                         <div id="favoritesList" class="header-dropdown-list"><div class="favorites-empty">暂无收藏</div></div>
                     </div>
                 </div>
                 <div class="header-tool-group header-dropdown-trigger" id="rankingsPanel">
-                    <span class="header-tool-btn">排行</span>
+                    <button class="header-tool-btn">排行</button>
                     <div class="header-dropdown" style="display:none;">
                         <div class="ranking-tabs">
                             <span class="ranking-tab active" data-tab="popular">人气</span>

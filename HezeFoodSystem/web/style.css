@@ -27,13 +27,14 @@ body {
 .header-title { flex: 1; }
 .header-title h1 { font-size: 22px; margin-bottom: 2px; font-weight: bold; }
 .header-title p { font-size: 13px; opacity: 0.85; }
-.header-tools { display: flex; gap: 8px; align-items: flex-start; }
+.header-tools { display: flex; gap: 8px; align-items: center; }
 .header-tool-group { position: relative; }
 .header-tool-btn {
     padding: 5px 10px; background: rgba(255,255,255,0.15); color: white;
     border: 1px solid rgba(255,255,255,0.3); border-radius: 4px;
     font-size: 12px; cursor: pointer; white-space: nowrap;
     transition: background 0.15s; user-select: none;
+    font-family: inherit; line-height: 1.4;
 }
 .header-tool-btn:hover { background: rgba(255,255,255,0.25); }
 .header-dropdown {
