@@ -553,6 +553,9 @@ var DailyTourManager = {
             btn.textContent = '已采纳'; btn.disabled = true;
             setTimeout(function() { btn.textContent = originalText; btn.disabled = false; }, 1500);
         }
+
+        // Auto-execute route plan
+        executeRoutePlan();
     }
 };
 
