@@ -49,7 +49,8 @@
     <div class="container">
         <div class="sidebar">
             <div class="panel">
-                <h3>图层控制</h3>
+                <h3 class="panel-header">图层控制 <span class="panel-toggle">▼</span></h3>
+                <div class="panel-body">
                 <div class="control-group">
                     <div class="toggle-btn-row">
                         <button id="btnToggleFood" class="toggle-btn active">美食标记</button>
@@ -57,10 +58,12 @@
                         <button id="btnOpenOnly" class="toggle-btn">仅营业中</button>
                     </div>
                 </div>
+                </div>
             </div>
 
             <div class="panel">
-                <h3>搜索</h3>
+                <h3 class="panel-header">搜索 <span class="panel-toggle">▼</span></h3>
+                <div class="panel-body">
                 <div class="search-box">
                     <input type="text" id="searchInput" class="search-input" placeholder="搜索名称、地址或标签...">
                     <div class="search-type">
@@ -76,10 +79,12 @@
                     </div>
                     <div id="searchResultList" class="search-result-list"></div>
                 </div>
+                </div>
             </div>
 
             <div class="panel">
-                <h3>数据统计</h3>
+                <h3 class="panel-header">数据统计 <span class="panel-toggle">▼</span></h3>
+                <div class="panel-body">
                 <div class="stats">
                     <div class="stat-item">
                         <span class="stat-value" id="foodCount">0</span>
@@ -98,10 +103,12 @@
                         <span class="stat-label">预计时间(分)</span>
                     </div>
                 </div>
+                </div>
             </div>
 
             <div class="panel">
-                <h3>路线规划</h3>
+                <h3 class="panel-header">路线规划 <span class="panel-toggle">▼</span></h3>
+                <div class="panel-body">
                 <div class="route-planner">
                     <div class="route-mode">
                         <span class="route-mode-btn active" data-mode="driving">驾车</span>
@@ -141,24 +148,31 @@
                     <div id="routeSummary" class="route-summary"></div>
                     <div id="routeSegments" class="route-segments"></div>
                 </div>
-            </div>
-
-            <div class="panel">
-                <h3>美食分类</h3>
-                <div class="category-filters" id="categoryFilters"></div>
-            </div>
-
-            <div class="panel">
-                <h3>用户画像 <button id="btnEditProfile" class="panel-action-btn">编辑</button> <button id="btnRestoreProfile" class="panel-action-btn" style="display:none;">恢复</button></h3>
-                <div id="profilePanel" class="profile-content">
-                    <div class="profile-empty">收藏美食后可查看画像</div>
                 </div>
             </div>
 
             <div class="panel">
-                <h3>一日游推荐 <button id="btnRefreshTour" class="panel-action-btn">换一批</button></h3>
+                <h3 class="panel-header">美食分类 <span class="panel-toggle">▼</span></h3>
+                <div class="panel-body">
+                <div class="category-filters" id="categoryFilters"></div>
+                </div>
+            </div>
+
+            <div class="panel">
+                <h3 class="panel-header">用户画像 <span class="panel-toggle">▼</span><div style="display:inline;float:right;"><button id="btnEditProfile" class="panel-action-btn">编辑</button> <button id="btnRestoreProfile" class="panel-action-btn" style="display:none;">恢复</button></div></h3>
+                <div class="panel-body">
+                <div id="profilePanel" class="profile-content">
+                    <div class="profile-empty">收藏美食后可查看画像</div>
+                </div>
+                </div>
+            </div>
+
+            <div class="panel">
+                <h3 class="panel-header">一日游推荐 <span class="panel-toggle">▼</span><div style="display:inline;float:right;"><button id="btnRefreshTour" class="panel-action-btn">换一批</button></div></h3>
+                <div class="panel-body">
                 <div id="dailyTourList" class="daily-tour-content">
                     <div class="profile-empty">收藏POI后可生成推荐</div>
+                </div>
                 </div>
             </div>
         </div>

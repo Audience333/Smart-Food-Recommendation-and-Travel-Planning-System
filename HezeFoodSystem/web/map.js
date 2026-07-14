@@ -335,10 +335,10 @@ var ProfileManager = {
         html += '<div class="profile-section"><div class="profile-section-title">口味偏好 ' + (this.isEditing ? '<span style="font-size:11px;color:#999;">(点击移除)</span>' : '') + '</div><div class="profile-taste-cloud">';
         tasteSorted.forEach(function(t) {
             if (ProfileManager.isEditing) {
-                html += '<span class="profile-taste-tag editable" data-taste="' + t + '" style="font-size:' + Math.max(12, 12 + (tasteCounts[t] / tasteCounts[tasteSorted[0]]) * 10) + 'px;cursor:pointer;" title="点击移除">' + t + '(' + tasteCounts[t] + ') ×</span>';
+                html += '<span class="profile-taste-tag editable" data-taste="' + t + '" style="font-size:' + Math.max(11, 11 + ((tasteCounts[t] || 0) / (tasteCounts[tasteSorted[0]] || 1)) * 5) + 'px;cursor:pointer;" title="点击移除">' + t + '(' + (tasteCounts[t] || 0) + ') ×</span>';
             } else {
-                var size = Math.max(12, 12 + (tasteCounts[t] / tasteCounts[tasteSorted[0]]) * 10);
-                html += '<span class="profile-taste-tag" style="font-size:' + size + 'px;">' + t + '(' + tasteCounts[t] + ')</span>';
+                var size = Math.max(11, 11 + ((tasteCounts[t] || 0) / (tasteCounts[tasteSorted[0]] || 1)) * 5);
+                html += '<span class="profile-taste-tag" style="font-size:' + size + 'px;">' + t + '(' + (tasteCounts[t] || 0) + ')</span>';
             }
         });
         html += '</div></div>';
@@ -659,6 +659,19 @@ async function loadData() {
 
     await Promise.all(loadPromises);
 
+    foodData.forEach(function(f) {
+        if (f.address && f.address !== '-' && f.address !== '无法获取') {
+            var key = f.lng.toFixed(5) + ',' + f.lat.toFixed(5);
+            addressCache[key] = f.address;
+        }
+    });
+    spotData.forEach(function(s) {
+        if (s.address && s.address !== '-' && s.address !== '无法获取') {
+            var key = s.lng.toFixed(5) + ',' + s.lat.toFixed(5);
+            addressCache[key] = s.address;
+        }
+    });
+
     updateStats();
     generateCategoryFilters();
         initSearch();
@@ -687,6 +700,12 @@ async function loadData() {
         });
         document.addEventListener('click', function() {
             document.querySelectorAll('.header-dropdown').forEach(function(d) { d.style.display = 'none'; });
+        });
+
+        document.querySelectorAll('.panel-header').forEach(function(header) {
+            header.addEventListener('click', function() {
+                this.parentElement.classList.toggle('collapsed');
+            });
         });
 
     if (map) {
@@ -851,6 +870,11 @@ function showSpotMarkers() {
 // ==================== 信息窗口 ====================
 
 function showFoodDetail(food) {
+    if (currentInfoWindow && currentInfoWindow._poiId === food.id && currentInfoWindow._poiType === 'food') {
+        currentInfoWindow.close();
+        currentInfoWindow = null;
+        return;
+    }
     // 评分星级
     var stars = '';
     var fullStars = Math.floor(food.score);
@@ -920,6 +944,8 @@ function showFoodDetail(food) {
         closeWhenClickMap: true
     });
 
+    infoWindow._poiId = food.id;
+    infoWindow._poiType = 'food';
     infoWindow.open(map, [food.lng, food.lat]);
     if (currentInfoWindow) currentInfoWindow.close();
     currentInfoWindow = infoWindow;
@@ -933,18 +959,16 @@ function showFoodDetail(food) {
 
     var addrEl = document.getElementById(addrId);
     if (addrEl) {
-        if (food.address && food.address !== '-' && food.address !== '无法获取') {
-            addrEl.textContent = food.address;
-        } else {
-            getAddress(food.lng, food.lat, function (addr) {
-                var el2 = document.getElementById(addrId);
-                if (el2) el2.textContent = addr;
-            });
-        }
+        addrEl.textContent = (food.address && food.address !== '-' && food.address !== '无法获取') ? food.address : '地址未知';
     }
 }
 
 function showSpotDetail(spot) {
+    if (currentInfoWindow && currentInfoWindow._poiId === spot.id && currentInfoWindow._poiType === 'spot') {
+        currentInfoWindow.close();
+        currentInfoWindow = null;
+        return;
+    }
     HistoryManager.push('view', { poiId: spot.id, poiType: 'spot', lng: spot.lng, lat: spot.lat, poiName: spot.name });
     var stars = '';
     var fullStars = Math.floor(spot.score);
@@ -994,6 +1018,8 @@ function showSpotDetail(spot) {
         closeWhenClickMap: true
     });
 
+    infoWindow._poiId = spot.id;
+    infoWindow._poiType = 'spot';
     infoWindow.open(map, [spot.lng, spot.lat]);
     if (currentInfoWindow) currentInfoWindow.close();
     currentInfoWindow = infoWindow;
@@ -1005,12 +1031,10 @@ function showSpotDetail(spot) {
             else { FavoriteManager.add({ id: spot.id, type: 'spot', name: spot.name }); se.innerHTML = '&#9733; 已收藏'; se.className = 'fav-btn faved'; se.style.background = '#fff3e0'; se.style.borderColor = '#ff9800'; } }); }
     }, 100);
 
-    // 如果已有地址缓存则直接显示，否则异步获取真实地址
-    if (!spot.address || spot.address === '' || spot.address === '-' || spot.address === '无法获取') {
-        getAddress(spot.lng, spot.lat, function (addr) {
-            var el = document.getElementById(addrId);
-            if (el) el.textContent = addr;
-        });
+    // 地址直接使用已有数据
+    var spotAddrEl = document.getElementById(addrId);
+    if (spotAddrEl) {
+        spotAddrEl.textContent = (spot.address && spot.address !== '-' && spot.address !== '无法获取') ? spot.address : '地址未知';
     }
 }
 
