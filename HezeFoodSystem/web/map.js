@@ -332,7 +332,7 @@ var ProfileManager = {
         var html = '';
 
         // Taste tags (editable or not)
-        html += '<div class="profile-section"><div class="profile-section-title">口味偏好 ' + (this.isEditing ? '<span style="font-size:11px;color:#999;">(点击移除)</span>' : '') + '</div><div class="profile-taste-cloud">';
+        html += '<div class="profile-section"><div class="profile-section-title">口味偏好 ' + (this.isEditing ? '<span style="font-size:11px;color:#999;">(点击移除 / 下方添加)</span>' : '') + '</div><div class="profile-taste-cloud">';
         tasteSorted.forEach(function(t) {
             if (ProfileManager.isEditing) {
                 html += '<span class="profile-taste-tag editable" data-taste="' + t + '" style="font-size:' + Math.max(11, 11 + ((tasteCounts[t] || 0) / (tasteCounts[tasteSorted[0]] || 1)) * 5) + 'px;cursor:pointer;" title="点击移除">' + t + '(' + (tasteCounts[t] || 0) + ') ×</span>';
@@ -341,7 +341,13 @@ var ProfileManager = {
                 html += '<span class="profile-taste-tag" style="font-size:' + size + 'px;">' + t + '(' + (tasteCounts[t] || 0) + ')</span>';
             }
         });
-        html += '</div></div>';
+        html += '</div>';
+        if (this.isEditing) {
+            html += '<div style="display:flex;gap:4px;margin-top:6px;">' +
+                '<input id="profileAddTaste" class="search-input" placeholder="添加口味标签" style="flex:1;padding:4px 8px;font-size:12px;">' +
+                '<button id="btnProfileAddTaste" class="panel-action-btn" style="padding:4px 10px;">添加</button></div>';
+        }
+        html += '</div>';
 
         // Price bars
         html += '<div class="profile-section"><div class="profile-section-title">价格区间</div>';
@@ -375,6 +381,17 @@ var ProfileManager = {
                     ProfileManager.renderPanel();
                 });
             });
+            var addBtn = document.getElementById('btnProfileAddTaste');
+            var addInput = document.getElementById('profileAddTaste');
+            if (addBtn && addInput) {
+                addBtn.addEventListener('click', function() {
+                    var val = addInput.value.trim();
+                    if (val && ProfileManager._editCounts) {
+                        ProfileManager._editCounts[val] = (ProfileManager._editCounts[val] || 0) + 1;
+                        ProfileManager.renderPanel();
+                    }
+                });
+            }
         }
     },
 

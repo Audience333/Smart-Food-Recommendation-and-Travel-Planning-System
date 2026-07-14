@@ -36,9 +36,17 @@ def parse_food_line(line):
                               any(c.isdigit() for c in part9))
                     if is_time:
                         opentime = part9
-                        tags_part = parts[9]
+                        # parts[9] could be photos, parts[10] is tags
+                        if len(parts) >= 11:
+                            tags_part = parts[10]
+                        else:
+                            tags_part = parts[9]
                     else:
-                        tags_part = part9
+                        # parts[8] could be photos, parts[9] is tags
+                        if len(parts) >= 10:
+                            tags_part = parts[9]
+                        else:
+                            tags_part = parts[8]
                 else:
                     tags_part = parts[8]
             else:
@@ -46,6 +54,8 @@ def parse_food_line(line):
         else:
             tags_part = parts[7]
 
+        # Tags is always the last field
+        tags_part = parts[-1] if len(parts) >= 1 else ""
         photos_str = parts[-2] if len(parts) >= 2 else '-'
         photos = photos_str.split(';') if photos_str and photos_str != '-' else []
 
