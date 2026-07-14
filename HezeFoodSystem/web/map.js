@@ -1294,9 +1294,17 @@ function executeRoutePlan() {
 
     var allWaypoints = [startPOI];
     routeWaypoints.forEach(function(wp) {
-        if (wp.lng !== 0 && wp.lat !== 0) allWaypoints.push(wp);
+        if (wp.lng !== 0 && wp.lat !== 0 && !isNaN(wp.lng) && !isNaN(wp.lat)) allWaypoints.push(wp);
     });
     allWaypoints.push(endPOI);
+
+    for (var i = 0; i < allWaypoints.length; i++) {
+        var w = allWaypoints[i];
+        if (isNaN(w.lng) || isNaN(w.lat) || w.lng === 0 || w.lat === 0) {
+            alert('途径点坐标无效，请重新选择');
+            return;
+        }
+    }
 
     for (var i = 0; i < allWaypoints.length - 1; i++) {
         var d = haversine(allWaypoints[i].lng, allWaypoints[i].lat, allWaypoints[i+1].lng, allWaypoints[i+1].lat);
@@ -1331,7 +1339,9 @@ function clearRoute() {
     currentRouteMarkers.forEach(function(m) { m.setMap(null); });
     currentRoutePolylines = [];
     currentRouteMarkers = [];
-    document.getElementById('routeDetail').style.display = 'none';
+    window._routeSegments = [];
+    var rd = document.getElementById('routeDetail');
+    if (rd) rd.style.display = 'none';
 }
 
 function planRouteSegments(waypoints, index) {
@@ -1407,6 +1417,7 @@ function parsePolyline(steps) {
 
 function renderRouteSegment(segment, index) {
     if (!map) return;
+    if (!segment || isNaN(segment.distance) || isNaN(segment.duration) || segment.distance <= 0) return;
     var colors = ['#ff5722', '#e64a19', '#bf360c', '#ff9800', '#f57c00', '#ff7043'];
     var color = colors[index % colors.length];
 
@@ -1440,7 +1451,9 @@ function renderRouteSegment(segment, index) {
 
 function renderRouteSegmentFallback(from, to, index) {
     if (!map) return;
+    if (!from || !to || isNaN(from.lng) || isNaN(from.lat) || isNaN(to.lng) || isNaN(to.lat) || from.lng === 0 || from.lat === 0 || to.lng === 0 || to.lat === 0) return;
     var dist = haversine(from.lng, from.lat, to.lng, to.lat);
+    if (isNaN(dist) || dist <= 0) return;
     var speed = routeMode === 'walking' ? 5 : 40;
     var durationMin = Math.round(dist / (speed * 1000 / 60));
     var segment = { from: from.name, to: to.name, distance: Math.round(dist), duration: durationMin * 60, tolls: 0, steps: [[from.lng, from.lat], [to.lng, to.lat]] };
@@ -1470,11 +1483,18 @@ function haversine(lng1, lat1, lng2, lat2) {
 function renderRouteSummary() {
     if (!window._routeSegments || window._routeSegments.length === 0) return;
     var totalDist = 0, totalTime = 0, totalTolls = 0;
-    window._routeSegments.forEach(function(s) { 
-        if (s) { totalDist += s.distance; totalTime += s.duration; totalTolls += s.tolls; }
+    window._routeSegments.forEach(function(s, i) {
+        if (!s || isNaN(s.distance) || isNaN(s.duration)) return;
+        totalDist += s.distance; totalTime += s.duration; totalTolls += (s.tolls || 0);
     });
 
     var sm = document.getElementById('routeSummary');
+
+    if (totalDist > 10000000 || isNaN(totalDist)) {
+        if (sm) sm.innerHTML = '<div class="route-error">路径计算异常，请重试</div>';
+        return;
+    }
+
     var summaryHtml = '';
     summaryHtml += '<div class="route-summary-item">总距离: <strong>' + (totalDist / 1000).toFixed(1) + ' km</strong></div>';
     summaryHtml += '<div class="route-summary-item">总时间: <strong>' + Math.round(totalTime / 60) + ' 分钟</strong></div>';
