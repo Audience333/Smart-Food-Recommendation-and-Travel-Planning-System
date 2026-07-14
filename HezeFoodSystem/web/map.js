@@ -611,11 +611,6 @@ function loadMap() {
                 currentInfoWindow.close();
                 currentInfoWindow = null;
             }
-            var scale = Math.min(1, Math.max(0.6, zoom / 15));
-            document.querySelectorAll('.amap-info-content').forEach(function(el) {
-                el.style.transform = 'scale(' + scale + ')';
-                el.style.transformOrigin = 'bottom left';
-            });
         });
 
         // 初始化逆地理编码
@@ -952,12 +947,6 @@ function showFoodDetail(food) {
     infoWindow._poiId = food.id;
     infoWindow._poiType = 'food';
     infoWindow.open(map, [food.lng, food.lat]);
-    setTimeout(function() {
-        var zoom = map.getZoom();
-        var scale = Math.min(1, Math.max(0.6, zoom / 15));
-        var ac = document.querySelector('.amap-info-content');
-        if (ac) { ac.style.transform = 'scale(' + scale + ')'; ac.style.transformOrigin = 'bottom left'; }
-    }, 50);
     if (currentInfoWindow) currentInfoWindow.close();
     currentInfoWindow = infoWindow;
 
@@ -1046,12 +1035,6 @@ function showSpotDetail(spot) {
     infoWindow._poiId = spot.id;
     infoWindow._poiType = 'spot';
     infoWindow.open(map, [spot.lng, spot.lat]);
-    setTimeout(function() {
-        var zoom = map.getZoom();
-        var scale = Math.min(1, Math.max(0.6, zoom / 15));
-        var ac = document.querySelector('.amap-info-content');
-        if (ac) { ac.style.transform = 'scale(' + scale + ')'; ac.style.transformOrigin = 'bottom left'; }
-    }, 50);
     if (currentInfoWindow) currentInfoWindow.close();
     currentInfoWindow = infoWindow;
 

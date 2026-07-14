@@ -60,7 +60,7 @@ body {
 
 /* ==================== 左侧边栏 ==================== */
 .sidebar {
-    width: 320px;
+    width: 260px;
     background: white;
     overflow-y: auto;
     box-shadow: 2px 0 8px rgba(0,0,0,0.1);
@@ -71,13 +71,13 @@ body {
 .panel {
     background: #fafafa;
     border-radius: 8px;
-    padding: 10px;
-    margin-bottom: 8px;
+    padding: 8px;
+    margin-bottom: 6px;
     border: 1px solid #eee;
 }
 
 .panel h3 {
-    font-size: 16px; color: #d32f2f; margin-bottom: 12px; padding-bottom: 8px;
+    font-size: 14px; color: #d32f2f; margin-bottom: 6px; padding-bottom: 4px;
     border-bottom: 1px solid #eee;
 }
 
