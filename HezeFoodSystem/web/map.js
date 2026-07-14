@@ -499,7 +499,7 @@ var DailyTourManager = {
             html += '<div class="daily-tour-stop">' + (i+2) + '. ' + f.name + ' (' + f.category + '/&#9733;' + f.score.toFixed(1) + '/Y' + f.price + ')</div>';
         });
         html += '</div>';
-        html += '<button class="daily-tour-adopt" onclick="DailyTourManager.adopt(0)">采纳此路线</button>';
+        html += '<button class="daily-tour-adopt" data-index="0" onclick="DailyTourManager.adopt(0)">采纳此路线</button>';
         html += '</div>';
         
         if (this.candidates.length > 1) {
@@ -509,7 +509,7 @@ var DailyTourManager = {
                 html += '<div class="daily-tour-alt">';
                 html += '<span>' + alt.spot.name + '游</span>';
                 html += '<span>评分 ' + alt.avgScore.toFixed(1) + ' / ' + (alt.totalDist/1000).toFixed(0) + 'km</span>';
-                html += '<button class="daily-tour-adopt small" onclick="DailyTourManager.adopt(' + i + ')">采纳</button>';
+                html += '<button class="daily-tour-adopt small" data-index="' + i + '" onclick="DailyTourManager.adopt(' + i + ')">采纳</button>';
                 html += '</div>';
             }
         }
@@ -546,14 +546,13 @@ var DailyTourManager = {
             }
         }
 
-        // Show "已采纳" on all adopt buttons temporarily
-        var buttons = document.querySelectorAll('.daily-tour-adopt');
-        buttons.forEach(function(btn) { btn.textContent = '已采纳'; btn.disabled = true; });
-        setTimeout(function() {
-            buttons.forEach(function(btn) { btn.textContent = '采纳此路线'; btn.disabled = false; });
-            var smallBtns = document.querySelectorAll('.daily-tour-adopt.small');
-            smallBtns.forEach(function(btn) { btn.textContent = '采纳'; });
-        }, 1500);
+        // Show "已采纳" on the specific button
+        var btn = document.querySelector('.daily-tour-adopt[data-index="' + index + '"]');
+        if (btn) {
+            var originalText = btn.textContent;
+            btn.textContent = '已采纳'; btn.disabled = true;
+            setTimeout(function() { btn.textContent = originalText; btn.disabled = false; }, 1500);
+        }
     }
 };
 

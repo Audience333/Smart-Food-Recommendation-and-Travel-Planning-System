@@ -585,10 +585,14 @@ body {
 .amap-info-content a,
 .amap-info-content a[href],
 .amap-info-sharp,
-.amap-info-content > div:last-child:not([class*="info-window"]),
 .amap-info-close,
+.amap-info-content > div:last-child:not([class*="info-window"]),
 .amap-info-content br + a,
-.amap-info-content div[style*="color"]:last-child a { display: none !important; }
+.amap-info-content div[style*="color"]:last-child a,
+.amap-info-content > a,
+.amap-info-marker,
+.amap-info-content * > a { display: none !important; }
+.amap-info-content a { height: 0 !important; overflow: hidden !important; pointer-events: none !important; }
 
 .amap-info-content { overflow: hidden; }
 .amap-info-content > :last-child:not(.info-window *) { display: none !important; }
