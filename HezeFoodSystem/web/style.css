@@ -383,14 +383,14 @@ body {
     transition: all 0.2s ease;
 }
 .food-marker:hover {
-    transform: rotate(-45deg) scale(1.2) !important;
+    transform: scale(1.3) !important;
     z-index: 999 !important;
 }
 .spot-marker {
     transition: all 0.2s ease;
 }
 .spot-marker:hover {
-    transform: rotate(45deg) scale(1.2) !important;
+    transform: scale(1.3) !important;
     z-index: 999 !important;
 }
 

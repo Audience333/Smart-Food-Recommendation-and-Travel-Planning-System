@@ -245,6 +245,10 @@ var RankingManager = {
 };
 
 var ProfileManager = {
+    isEditing: false,
+    originalProfile: '',
+    _editCounts: null,
+
     renderPanel: function() {
         var container = document.getElementById('profilePanel');
         if (!container) return;
@@ -275,8 +279,39 @@ var ProfileManager = {
                 });
             }
         });
+        // Save original counts before editing
+        if (!this.isEditing) {
+            this._editCounts = null;
+        }
+        if (this.isEditing) {
+            if (!this._editCounts) {
+                this._editCounts = JSON.parse(JSON.stringify(tasteCounts));
+            }
+            tasteCounts = this._editCounts;
+        }
+
         var tasteSorted = Object.keys(tasteCounts).sort(function(a,b){return tasteCounts[b]-tasteCounts[a];}).slice(0, 8);
-        
+
+        // If no taste tags found, generate from categories as fallback
+        if (tasteSorted.length === 0) {
+            var catMap = {
+                '汤类': ['鲜香','暖胃'],
+                '面食': ['筋道','原味'],
+                '烧烤': ['孜然','香辣'],
+                '甜品': ['甜口','清甜'],
+                '饮品': ['清爽','清甜'],
+                '凉菜': ['开胃','清爽'],
+                '小吃': ['原味','鲜香'],
+                '正餐': ['醇厚','酱香']
+            };
+            var catTastes = {};
+            foods.forEach(function(f) {
+                var defaults = catMap[f.category] || ['原味','鲜香'];
+                defaults.forEach(function(t) { catTastes[t] = (catTastes[t] || 0) + 1; });
+            });
+            tasteSorted = Object.keys(catTastes).sort(function(a,b){return catTastes[b]-catTastes[a];});
+        }
+
         // 2. Price analysis
         var priceBands = {'<10':0,'10-30':0,'30-60':0,'60-100':0,'100+':0};
         foods.forEach(function(f) {
@@ -296,11 +331,15 @@ var ProfileManager = {
 
         var html = '';
 
-        // Taste tags
-        html += '<div class="profile-section"><div class="profile-section-title">口味偏好</div><div class="profile-taste-cloud">';
+        // Taste tags (editable or not)
+        html += '<div class="profile-section"><div class="profile-section-title">口味偏好 ' + (this.isEditing ? '<span style="font-size:11px;color:#999;">(点击移除)</span>' : '') + '</div><div class="profile-taste-cloud">';
         tasteSorted.forEach(function(t) {
-            var size = Math.max(12, 12 + (tasteCounts[t] / tasteCounts[tasteSorted[0]]) * 10);
-            html += '<span class="profile-taste-tag" style="font-size:' + size + 'px;">' + t + '(' + tasteCounts[t] + ')</span>';
+            if (ProfileManager.isEditing) {
+                html += '<span class="profile-taste-tag editable" data-taste="' + t + '" style="font-size:' + Math.max(12, 12 + (tasteCounts[t] / tasteCounts[tasteSorted[0]]) * 10) + 'px;cursor:pointer;" title="点击移除">' + t + '(' + tasteCounts[t] + ') ×</span>';
+            } else {
+                var size = Math.max(12, 12 + (tasteCounts[t] / tasteCounts[tasteSorted[0]]) * 10);
+                html += '<span class="profile-taste-tag" style="font-size:' + size + 'px;">' + t + '(' + tasteCounts[t] + ')</span>';
+            }
         });
         html += '</div></div>';
 
@@ -325,6 +364,33 @@ var ProfileManager = {
         html += '</div>';
 
         container.innerHTML = html;
+
+        if (this.isEditing) {
+            container.querySelectorAll('.profile-taste-tag.editable').forEach(function(el) {
+                el.addEventListener('click', function() {
+                    var taste = this.dataset.taste;
+                    if (ProfileManager._editCounts && ProfileManager._editCounts[taste]) {
+                        delete ProfileManager._editCounts[taste];
+                    }
+                    ProfileManager.renderPanel();
+                });
+            });
+        }
+    },
+
+    enterEditMode: function() {
+        this.isEditing = true;
+        document.getElementById('btnEditProfile').style.display = 'none';
+        document.getElementById('btnRestoreProfile').style.display = 'inline-block';
+        this.renderPanel();
+    },
+
+    restoreProfile: function() {
+        this.isEditing = false;
+        this._editCounts = null;
+        document.getElementById('btnEditProfile').style.display = 'inline-block';
+        document.getElementById('btnRestoreProfile').style.display = 'none';
+        this.renderPanel();
     }
 };
 
@@ -479,6 +545,15 @@ var DailyTourManager = {
                 }
             }
         }
+
+        // Show "已采纳" on all adopt buttons temporarily
+        var buttons = document.querySelectorAll('.daily-tour-adopt');
+        buttons.forEach(function(btn) { btn.textContent = '已采纳'; btn.disabled = true; });
+        setTimeout(function() {
+            buttons.forEach(function(btn) { btn.textContent = '采纳此路线'; btn.disabled = false; });
+            var smallBtns = document.querySelectorAll('.daily-tour-adopt.small');
+            smallBtns.forEach(function(btn) { btn.textContent = '采纳'; });
+        }, 1500);
     }
 };
 
@@ -596,6 +671,10 @@ async function loadData() {
         ProfileManager.renderPanel();
         DailyTourManager.generate();
         initHistory();
+        var editBtn = document.getElementById('btnEditProfile');
+        var restoreBtn = document.getElementById('btnRestoreProfile');
+        if (editBtn) editBtn.addEventListener('click', function() { ProfileManager.enterEditMode(); });
+        if (restoreBtn) restoreBtn.addEventListener('click', function() { ProfileManager.restoreProfile(); });
         var refreshBtn = document.getElementById('btnRefreshTour');
         if (refreshBtn) { refreshBtn.addEventListener('click', function() { DailyTourManager.generate(); }); }
         document.querySelectorAll('.header-tool-group').forEach(function(group) {
@@ -658,14 +737,13 @@ function showFoodMarkers() {
             '<div class="food-marker" style="' +
             'background:' + color + ';' +
             'color:white;' +
-            'width:32px;height:32px;' +
+            'width:22px;height:22px;' +
             'border-radius:50%;' +
             'display:flex;align-items:center;justify-content:center;' +
-            'font-size:14px;font-weight:bold;' +
-            'box-shadow:0 2px 6px rgba(0,0,0,0.3);' +
+            'font-size:10px;font-weight:bold;' +
+            'box-shadow:0 1px 3px rgba(0,0,0,0.3);' +
             'border:2px solid white;' +
             'cursor:pointer;' +
-            'transition:transform 0.2s;' +
             '">' +
             displayChar +
             '</div>';
@@ -678,7 +756,7 @@ function showFoodMarkers() {
             var marker = new AMap.Marker({
                 position: new AMap.LngLat(food.lng, food.lat),
                 content: markerContent,
-                offset: new AMap.Pixel(-8, -8),
+                offset: new AMap.Pixel(-6, -6),
                 zIndex: 100,
                 title: food.name
             });
@@ -688,7 +766,7 @@ function showFoodMarkers() {
             });
 
             marker.on('mouseover', function () {
-                this.setContent(markerContent.replace('width:32px','width:40px').replace('height:32px','height:40px').replace('font-size:14px','font-size:17px'));
+                this.setContent(markerContent.replace('width:22px','width:32px').replace('height:22px','height:32px').replace('font-size:10px','font-size:14px'));
             });
             marker.on('mouseout', function () {
                 this.setContent(markerContent);
@@ -727,16 +805,15 @@ function showSpotMarkers() {
             '<div class="spot-marker" style="' +
             'background:#1565c0;' +
             'color:white;' +
-            'width:36px;height:36px;' +
+            'width:24px;height:24px;' +
             'border-radius:4px;' +
-            'transform:rotate(45deg);' +
             'display:flex;align-items:center;justify-content:center;' +
-            'font-size:16px;' +
-            'box-shadow:0 2px 8px rgba(0,0,0,0.3);' +
+            'font-size:11px;font-weight:bold;' +
+            'box-shadow:0 1px 3px rgba(0,0,0,0.3);' +
             'border:2px solid white;' +
             'cursor:pointer;' +
             '">' +
-            '<span style="transform:rotate(-45deg);">景</span>' +
+            '<span>景</span>' +
             '</div>';
 
         if (FavoriteManager.isFavorite(spot.id, 'spot')) {
@@ -747,7 +824,7 @@ function showSpotMarkers() {
             var marker = new AMap.Marker({
                 position: new AMap.LngLat(spot.lng, spot.lat),
                 content: markerContent,
-                offset: new AMap.Pixel(-18, -18),
+                offset: new AMap.Pixel(-12, -12),
                 zIndex: 110,
                 title: spot.name
             });
