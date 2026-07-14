@@ -181,21 +181,31 @@ var FavoriteManager = {
     }
 };
 
+var rankSortDesc = true;
+
 var RankingManager = {
     currentTab: 'popular',
-    getPopular: function() { return foodData.slice().sort(function(a,b){return b.score - a.score;}); },
+    getPopular: function() { 
+        var r = foodData.slice().sort(function(a,b){return b.score - a.score;});
+        if (!rankSortDesc) r.reverse();
+        return r;
+    },
     getValue: function() {
-        return foodData.slice().sort(function(a,b){
+        var r = foodData.slice().sort(function(a,b){
             return (b.score/Math.log(b.price+1)) - (a.score/Math.log(a.price+1));
         });
+        if (!rankSortDesc) r.reverse();
+        return r;
     },
     getFavRanking: function() {
         var fc = {};
         FavoriteManager.items.forEach(function(f){ if(f.type==='food') fc[f.id]=(fc[f.id]||0)+1; });
-        return foodData.slice().sort(function(a,b){
+        var r = foodData.slice().sort(function(a,b){
             var fa=fc[a.id]||0, fb=fc[b.id]||0;
             if(fb!==fa) return fb-fa; return b.score-a.score;
         });
+        if (!rankSortDesc) r.reverse();
+        return r;
     },
     refresh: function() { this.renderPanel(); },
     renderPanel: function() {
@@ -216,9 +226,20 @@ var RankingManager = {
     },
     init: function() {
         var self = this;
-        document.querySelectorAll('.ranking-tab').forEach(function(tab){ tab.addEventListener('click',function(){
+        document.querySelectorAll('.ranking-tab').forEach(function(tab){ tab.addEventListener('click',function(e){
+            e.stopPropagation();
             document.querySelectorAll('.ranking-tab').forEach(function(t){t.classList.remove('active');});
             this.classList.add('active'); self.currentTab = this.dataset.tab; self.renderPanel(); }); });
+        
+        var sortBtn = document.getElementById('btnRankSort');
+        if (sortBtn) {
+            sortBtn.addEventListener('click', function(e) {
+                e.stopPropagation();
+                rankSortDesc = !rankSortDesc;
+                this.textContent = rankSortDesc ? '↓' : '↑';
+                self.renderPanel();
+            });
+        }
     }
 };
 
@@ -238,12 +259,13 @@ var ProfileManager = {
             return;
         }
 
-        // 1. Taste analysis
+        // 1. Taste analysis using whitelist of known taste keywords
+        var tasteWhitelist = ['麻辣','酸辣','清淡','酱香','蒜蓉','原味','鲜香','五香','甜口','咸鲜','微辣','重辣','酸甜','孜然','鲜嫩','酥脆','软糯','筋道','Q弹','肥而不腻','入口即化','暖胃','滋补','开胃','清爽'];
         var tasteCounts = {};
         foods.forEach(function(f) {
             if (f.tags) {
                 f.tags.forEach(function(t) {
-                    if (t.match(/^[^\d]/) && t.length <= 4 && !t.match(/^(早|午|晚|宵|下午|全天|堂食|外卖|快餐|聚餐|一人食|宴请|团餐|亲子|情侣|朋友|商务|独自|家庭|WiFi|停车|包厢|露天|空调|儿童|老字号|非遗|中华|地方|网红|必吃|百年|口碑|现点|秘制|限量|季节|配酒|人均|鲁菜|川菜|粤菜|湘菜|清真|东北|豫菜|苏菜|特色)$/)) {
+                    if (tasteWhitelist.indexOf(t) >= 0) {
                         tasteCounts[t] = (tasteCounts[t] || 0) + 1;
                     }
                 });
