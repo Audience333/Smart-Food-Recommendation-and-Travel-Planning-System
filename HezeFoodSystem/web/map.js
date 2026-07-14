@@ -702,6 +702,14 @@ function loadMap() {
             }
         });
 
+        // Click map to close info window
+        map.on('click', function(e) {
+            if (currentInfoWindow) {
+                currentInfoWindow.close();
+                currentInfoWindow = null;
+            }
+        });
+
         // 初始化逆地理编码
         geocoder = new AMap.Geocoder({ city: '菏泽' });
 
@@ -1263,15 +1271,36 @@ function populateSelectOptions() {
     spotData.forEach(function(s) { allPOIs.push({name: s.name, id: s.id, type: 'spot', category: s.type || '景点', lng: s.lng, lat: s.lat}); });
     allPOIs.sort(function(a,b) { return a.name.localeCompare(b.name, 'zh'); });
 
-    var optionHtml = '<option value="">-- 选择POI --</option>';
-    allPOIs.forEach(function(p) {
-        optionHtml += '<option value="' + p.type + '_' + p.id + '">' + p.name + ' (' + p.category + ')</option>';
-    });
+    function renderSelect(selId, filter) {
+        var sel = document.getElementById(selId);
+        if (!sel) return;
+        var filtered = filter ? allPOIs.filter(function(p) {
+            return p.name.indexOf(filter) >= 0 || p.category.indexOf(filter) >= 0;
+        }) : allPOIs;
+        var html = '<option value="">-- 选择POI --</option>';
+        filtered.forEach(function(p) {
+            html += '<option value="' + p.type + '_' + p.id + '">' + p.name + ' (' + p.category + ')</option>';
+        });
+        sel.innerHTML = html;
+    }
 
-    var startSel = document.getElementById('routeStart');
-    var endSel = document.getElementById('routeEnd');
-    if (startSel) startSel.innerHTML = optionHtml;
-    if (endSel) endSel.innerHTML = optionHtml;
+    renderSelect('routeStart', '');
+    renderSelect('routeEnd', '');
+
+    // Search filter for start
+    var startSearch = document.getElementById('routeStartSearch');
+    if (startSearch) {
+        startSearch.addEventListener('input', function() {
+            renderSelect('routeStart', this.value.trim());
+        });
+    }
+    // Search filter for end
+    var endSearch = document.getElementById('routeEndSearch');
+    if (endSearch) {
+        endSearch.addEventListener('input', function() {
+            renderSelect('routeEnd', this.value.trim());
+        });
+    }
 }
 
 function initRoutePlanner() {
