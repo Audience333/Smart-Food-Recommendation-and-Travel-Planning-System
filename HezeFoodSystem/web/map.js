@@ -299,6 +299,15 @@ function showFoodDetail(food) {
     }
 
     var addrId = 'addr-food-' + food.id;
+    var photosHtml = '';
+    if (food.photos && food.photos.length > 0) {
+        photosHtml = '<div class="info-photos">';
+        food.photos.forEach(function(url) {
+            photosHtml += '<img src="' + url + '" style="width:220px;height:150px;object-fit:cover;border-radius:4px;margin:2px;" onerror="this.style.display=\'none\'">';
+        });
+        photosHtml += '</div>';
+    }
+
     var statusBar = '';
     if (food.opentime && food.opentime !== '-') {
         var s = getOpenStatus(food.opentime);
@@ -307,6 +316,7 @@ function showFoodDetail(food) {
     }
     var html =
         '<div class="info-window">' +
+        photosHtml +
         statusBar +
         '<h4 style="border-color:' + color + '">' + icon + ' ' + food.name + '</h4>' +
         '<div class="info-row"><span class="info-label">评分</span>' +
@@ -350,8 +360,18 @@ function showSpotDetail(spot) {
     }
 
     var addrId = 'addr-spot-' + spot.id;
+    var photosHtml = '';
+    if (spot.photos && spot.photos.length > 0) {
+        photosHtml = '<div class="info-photos">';
+        spot.photos.forEach(function(url) {
+            photosHtml += '<img src="' + url + '" style="width:220px;height:150px;object-fit:cover;border-radius:4px;margin:2px;" onerror="this.style.display=\'none\'">';
+        });
+        photosHtml += '</div>';
+    }
+
     var html =
         '<div class="info-window">' +
+        photosHtml +
         '<h4 style="color:#1565c0;border-color:#1565c0;">[景点] ' + spot.name + '</h4>' +
         '<div class="info-row"><span class="info-label">类型</span><span>' + spot.type + '</span></div>' +
         '<div class="info-row"><span class="info-label">评分</span>' +

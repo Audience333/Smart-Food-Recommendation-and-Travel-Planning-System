@@ -46,10 +46,14 @@ def parse_food_line(line):
         else:
             tags_part = parts[7]
 
+        photos_str = parts[-2] if len(parts) >= 2 else '-'
+        photos = photos_str.split(';') if photos_str and photos_str != '-' else []
+
         return {
             'id': fid, 'name': name, 'lng': lng, 'lat': lat,
             'price': price, 'score': score, 'category': category,
             'address': address, 'opentime': opentime,
+            'photos': photos,
             'tags': [t.strip() for t in tags_part.split(',') if t.strip()]
         }
     except (ValueError, IndexError):
@@ -61,9 +65,17 @@ def parse_spot_line(line):
     if len(parts) < 13:
         return None
     try:
-        # 前12个字段是固定字段，剩余的全部作为标签
+        # 前12个字段是固定字段，接着可能为photos（嵌入在标签中），剩余的全部作为标签
         fixed_fields = parts[:12]
-        tag_fields = parts[12:]  # 剩余字段作为标签
+        remaining = parts[12:]
+        photos_str = '-'
+        tag_fields = []
+        for field in remaining:
+            if photos_str == '-' and (';' in field or field.startswith('http')):
+                photos_str = field
+            else:
+                tag_fields.append(field)
+        photos = photos_str.split(';') if photos_str and photos_str != '-' else []
         return {
             'id': int(fixed_fields[0]),
             'name': fixed_fields[1],
@@ -77,6 +89,7 @@ def parse_spot_line(line):
             'recommendDuration': fixed_fields[9],
             'bestSeason': fixed_fields[10],
             'score': float(fixed_fields[11]),
+            'photos': photos,
             'tags': [t.strip() for t in tag_fields if t.strip()]
         }
     except (ValueError, IndexError):

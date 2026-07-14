@@ -357,6 +357,8 @@ body {
     flex: 1;
 }
 
+.info-photos { display: flex; gap: 4px; overflow-x: auto; margin-bottom: 8px; padding-bottom: 4px; }
+
 .info-window .info-tags {
     display: flex;
     flex-wrap: wrap;
