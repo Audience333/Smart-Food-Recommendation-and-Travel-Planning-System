@@ -74,53 +74,14 @@ body {
     gap: 10px;
 }
 
-.toggle {
-    display: flex;
-    align-items: center;
-    cursor: pointer;
-    user-select: none;
+.toggle-btn-row { display: flex; gap: 8px; flex-wrap: wrap; }
+.toggle-btn {
+    padding: 8px 16px; border: 2px solid #ddd; border-radius: 20px;
+    background: #f5f5f5; color: #666; font-size: 13px; cursor: pointer;
+    transition: all 0.2s; user-select: none; outline: none;
 }
-
-.toggle input {
-    display: none;
-}
-
-.toggle-slider {
-    width: 44px;
-    height: 24px;
-    background: #ccc;
-    border-radius: 12px;
-    position: relative;
-    transition: background 0.3s;
-    margin-right: 10px;
-    flex-shrink: 0;
-}
-
-.toggle-slider::after {
-    content: '';
-    position: absolute;
-    width: 20px;
-    height: 20px;
-    background: white;
-    border-radius: 50%;
-    top: 2px;
-    left: 2px;
-    transition: transform 0.3s;
-    box-shadow: 0 1px 3px rgba(0,0,0,0.2);
-}
-
-.toggle input:checked + .toggle-slider {
-    background: #4caf50;
-}
-
-.toggle input:checked + .toggle-slider::after {
-    transform: translateX(20px);
-}
-
-.toggle-label {
-    font-size: 14px;
-    color: #555;
-}
+.toggle-btn:hover { border-color: #4caf50; background: #e8f5e9; }
+.toggle-btn.active { background: #4caf50; color: white; border-color: #4caf50; }
 
 /* ==================== 统计面板 ==================== */
 .stats {
@@ -540,7 +501,7 @@ body {
 .route-loading { text-align: center; padding: 20px; color: #999; }
 .route-error { text-align: center; padding: 20px; color: #d32f2f; }
 .top-floating-bar {
-    position: absolute; top: 15px; left: 15px; z-index: 60;
+    position: absolute; top: 15px; left: 15px; z-index: 1000;
     display: flex; gap: 6px; align-items: flex-start;
 }
 .history-controls { display:flex;gap:4px;align-items:flex-start;position:relative; }
@@ -556,10 +517,11 @@ body {
     width: 260px; max-height: 400px; overflow-y: auto;
     background: white; border-radius: 6px;
     box-shadow: 0 4px 16px rgba(0,0,0,0.15); padding: 12px;
+    z-index: 1001;
 }
 .history-btn { padding:6px 10px;background:white;border:1px solid #ccc;border-radius:4px;font-size:12px;cursor:pointer;box-shadow:0 2px 4px rgba(0,0,0,0.1);transition:all 0.15s; }
 .history-btn:hover { background:#f5f5f5;border-color:#999; }
-.history-dropdown { position:absolute;top:100%;left:0;margin-top:4px;width:240px;background:white;border-radius:6px;box-shadow:0 4px 16px rgba(0,0,0,0.15);z-index:70;overflow:hidden; }
+.history-dropdown { position:absolute;top:100%;left:0;margin-top:4px;width:240px;background:white;border-radius:6px;box-shadow:0 4px 16px rgba(0,0,0,0.15);z-index:1001;overflow:hidden; }
 .history-dropdown-header { display:flex;justify-content:space-between;align-items:center;padding:8px 12px;font-size:13px;font-weight:bold;border-bottom:1px solid #eee; }
 .history-clear { color:#d32f2f;cursor:pointer;font-size:12px;font-weight:normal; }
 .history-dropdown-list { max-height:300px;overflow-y:auto; }

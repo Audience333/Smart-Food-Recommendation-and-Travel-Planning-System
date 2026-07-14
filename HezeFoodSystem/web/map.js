@@ -19,6 +19,7 @@ var activeCategories = new Set();
 var addressCache = {};       // 逆地理编码缓存
 var toggleFoodVisible = true;
 var toggleSpotVisible = true;
+var openOnlyActive = false;
 var currentRoutePolylines = [];
 var currentRouteMarkers = [];
 var routeWaypoints = [];
@@ -325,9 +326,13 @@ async function loadData() {
             var trigger = panel.querySelector('.floating-panel-trigger');
             var body = panel.querySelector('.floating-panel-body');
             if (trigger && body) {
-                trigger.addEventListener('mouseenter', function() { body.style.display = 'block'; });
-                panel.addEventListener('mouseleave', function() { body.style.display = 'none'; });
+                trigger.addEventListener('click', function(e) { e.stopPropagation(); 
+                    body.style.display = body.style.display === 'block' ? 'none' : 'block'; 
+                });
             }
+        });
+        document.addEventListener('click', function() {
+            document.querySelectorAll('.floating-panel-body').forEach(function(b) { b.style.display = 'none'; });
         });
 
     if (map) {
@@ -425,8 +430,7 @@ function showFoodMarkers() {
     if (!toggleFoodVisible) {
         foodMarkers.forEach(function(m) { m.setMap(null); });
     }
-    var openOnlyCb = document.getElementById('toggleOpenOnly');
-    if (openOnlyCb && openOnlyCb.checked) {
+    if (openOnlyActive) {
         foodMarkers.forEach(function(m) {
             if (m._foodData && getOpenStatus(m._foodData.opentime).cls === 'status-closed') {
                 m.setMap(null);
@@ -683,31 +687,42 @@ function autoFitView() {
 // ==================== 图层控制与UI ====================
 
 function initControls() {
-    var foodToggleLabel = document.querySelector('label.toggle:has(#toggleFood)');
-    if (!foodToggleLabel) foodToggleLabel = document.getElementById('toggleFood').parentElement;
-    foodToggleLabel.addEventListener('click', function(e) {
-        setTimeout(function() {
-            toggleFoodVisible = document.getElementById('toggleFood').checked;
+    var btnFood = document.getElementById('btnToggleFood');
+    var btnSpot = document.getElementById('btnToggleSpot');
+
+    if (btnFood) {
+        btnFood.addEventListener('click', function() {
+            toggleFoodVisible = !toggleFoodVisible;
             if (toggleFoodVisible) {
+                this.classList.add('active');
                 foodMarkers.forEach(function(m) { m.setMap(map); });
             } else {
+                this.classList.remove('active');
                 foodMarkers.forEach(function(m) { m.setMap(null); });
             }
-        }, 10);
-    });
-
-    var spotToggleLabel = document.querySelector('label.toggle:has(#toggleSpot)');
-    if (!spotToggleLabel) spotToggleLabel = document.getElementById('toggleSpot').parentElement;
-    spotToggleLabel.addEventListener('click', function(e) {
-        setTimeout(function() {
-            toggleSpotVisible = document.getElementById('toggleSpot').checked;
+        });
+    }
+    if (btnSpot) {
+        btnSpot.addEventListener('click', function() {
+            toggleSpotVisible = !toggleSpotVisible;
             if (toggleSpotVisible) {
+                this.classList.add('active');
                 spotMarkers.forEach(function(m) { m.setMap(map); });
             } else {
+                this.classList.remove('active');
                 spotMarkers.forEach(function(m) { m.setMap(null); });
             }
-        }, 10);
-    });
+        });
+    }
+
+    var btnOpenOnly = document.getElementById('btnOpenOnly');
+    if (btnOpenOnly) {
+        btnOpenOnly.addEventListener('click', function() {
+            openOnlyActive = !openOnlyActive;
+            if (openOnlyActive) { this.classList.add('active'); } else { this.classList.remove('active'); }
+            showFoodMarkers();
+        });
+    }
 
     document.getElementById('btnZoomIn').addEventListener('click', function () {
         if (map) map.zoomIn();
@@ -718,15 +733,6 @@ function initControls() {
     document.getElementById('btnReset').addEventListener('click', function () {
         if (map) map.setZoomAndCenter(13, HEZE_CENTER);
     });
-
-    var openOnlyEl = document.getElementById('toggleOpenOnly');
-    if (openOnlyEl) {
-        openOnlyEl.addEventListener('change', function() {
-            foodMarkers.forEach(function(m) { m.setMap(null); });
-            foodMarkers = [];
-            showFoodMarkers();
-        });
-    }
 }
 
 function generateCategoryFilters() {
