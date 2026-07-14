@@ -607,7 +607,7 @@ function loadMap() {
 
         map.on('zoomend', function() {
             var zoom = map.getZoom();
-            if (zoom < 10 && currentInfoWindow) {
+            if (zoom < 7 && currentInfoWindow) {
                 currentInfoWindow.close();
                 currentInfoWindow = null;
             }
@@ -941,13 +941,13 @@ function showFoodDetail(food) {
     var infoWindow = new AMap.InfoWindow({
         content: html,
         offset: new AMap.Pixel(0, -25),
-        closeWhenClickMap: true
+        closeWhenClickMap: false
     });
 
     infoWindow._poiId = food.id;
     infoWindow._poiType = 'food';
-    infoWindow.open(map, [food.lng, food.lat]);
     if (currentInfoWindow) currentInfoWindow.close();
+    infoWindow.open(map, [food.lng, food.lat]);
     currentInfoWindow = infoWindow;
 
     setTimeout(function() {
@@ -956,20 +956,6 @@ function showFoodDetail(food) {
             if (FavoriteManager.isFavorite(food.id, 'food')) { FavoriteManager.remove(food.id, 'food'); se.innerHTML = '&#9734; 收藏'; se.className = 'fav-btn'; se.style.background = '#f5f5f5'; se.style.borderColor = '#ddd'; }
             else { FavoriteManager.add({ id: food.id, type: 'food', name: food.name }); se.innerHTML = '&#9733; 已收藏'; se.className = 'fav-btn faved'; se.style.background = '#fff3e0'; se.style.borderColor = '#ff9800'; } }); }
     }, 100);
-
-    setTimeout(function() {
-        var ac = document.querySelector('.amap-info-content');
-        if (ac) {
-            ac.querySelectorAll('a').forEach(function(a) { a.remove(); });
-            var children = ac.children;
-            for (var ci = children.length - 1; ci >= 0; ci--) {
-                var child = children[ci];
-                if (child.tagName === 'A' || (child.querySelectorAll && child.querySelectorAll('a').length > 0)) {
-                    child.style.display = 'none';
-                }
-            }
-        }
-    }, 200);
 
     var addrEl = document.getElementById(addrId);
     if (addrEl) {
@@ -1029,13 +1015,13 @@ function showSpotDetail(spot) {
     var infoWindow = new AMap.InfoWindow({
         content: html,
         offset: new AMap.Pixel(0, -25),
-        closeWhenClickMap: true
+        closeWhenClickMap: false
     });
 
     infoWindow._poiId = spot.id;
     infoWindow._poiType = 'spot';
-    infoWindow.open(map, [spot.lng, spot.lat]);
     if (currentInfoWindow) currentInfoWindow.close();
+    infoWindow.open(map, [spot.lng, spot.lat]);
     currentInfoWindow = infoWindow;
 
     setTimeout(function() {
@@ -1044,20 +1030,6 @@ function showSpotDetail(spot) {
             if (FavoriteManager.isFavorite(spot.id, 'spot')) { FavoriteManager.remove(spot.id, 'spot'); se.innerHTML = '&#9734; 收藏'; se.className = 'fav-btn'; se.style.background = '#f5f5f5'; se.style.borderColor = '#ddd'; }
             else { FavoriteManager.add({ id: spot.id, type: 'spot', name: spot.name }); se.innerHTML = '&#9733; 已收藏'; se.className = 'fav-btn faved'; se.style.background = '#fff3e0'; se.style.borderColor = '#ff9800'; } }); }
     }, 100);
-
-    setTimeout(function() {
-        var ac = document.querySelector('.amap-info-content');
-        if (ac) {
-            ac.querySelectorAll('a').forEach(function(a) { a.remove(); });
-            var children = ac.children;
-            for (var ci = children.length - 1; ci >= 0; ci--) {
-                var child = children[ci];
-                if (child.tagName === 'A' || (child.querySelectorAll && child.querySelectorAll('a').length > 0)) {
-                    child.style.display = 'none';
-                }
-            }
-        }
-    }, 200);
 
     // 地址直接使用已有数据
     var spotAddrEl = document.getElementById(addrId);
