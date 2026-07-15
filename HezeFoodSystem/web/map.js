@@ -1542,7 +1542,7 @@ function loadMap() {
     AMapLoader.load({
         key: AMAP_KEY,          // API Key（需在高德平台注册获取）
         version: "2.0",         // JSAPI 2.0 版本（支持 HTML 自定义标记）
-        plugins: ["AMap.ToolBar", "AMap.Scale", "AMap.Geocoder"]
+        plugins: ["AMap.ToolBar", "AMap.Scale", "AMap.Geocoder", "AMap.Driving", "AMap.Walking"]
     }).then(function (AMap) {
         // ======== 地图加载成功回调 ========
         console.log('[Map] 高德地图加载成功');
@@ -3015,7 +3015,6 @@ function clearRoute() {
  * @param {number} index     - 当前处理的段索引（从0开始）
  */
 function planRouteSegments(waypoints, index) {
-    // 递归终止条件：已处理完所有段 或 map 不可用
     if (!map || index >= waypoints.length - 1) {
         if (index >= waypoints.length - 1) renderRouteSummary();
         return;
@@ -3023,56 +3022,41 @@ function planRouteSegments(waypoints, index) {
 
     var from = waypoints[index];
     var to = waypoints[index + 1];
+    var self = this;
 
-    // 策略映射：sortMode → 高德 API 的 strategy 参数
-    var strategyMap = { time: 0, distance: 2, toll: 1 };
-    var strategy = strategyMap[routeSortMode] || 0;
-
-    // 构建高德路径规划 API 请求 URL
-    var url = 'https://restapi.amap.com/v3/direction/' + routeMode +
-              '?origin=' + from.lng + ',' + from.lat +
-              '&destination=' + to.lng + ',' + to.lat +
-              '&key=' + AMAP_KEY + '&strategy=' + strategy + '&output=json';
-
-    var xhr = new XMLHttpRequest();
-    xhr.open('GET', url, true);
-    xhr.onload = function() {
-        if (xhr.status === 200) {
-            try {
-                var data = JSON.parse(xhr.responseText);
-                // status='1' 表示API调用成功，且有可用路径
-                if (data.status === '1' && data.route && data.route.paths && data.route.paths.length > 0) {
-                    var path = data.route.paths[0];
+    // Use AMap built-in driving/walking service (avoids CORS issues with restapi.amap.com)
+    try {
+        var service = routeMode === 'walking' ? new AMap.Walking({ map: map }) : new AMap.Driving({ map: map, policy: 0 });
+        service.search(
+            new AMap.LngLat(from.lng, from.lat),
+            new AMap.LngLat(to.lng, to.lat),
+            function(status, result) {
+                if (status === 'complete' && result.routes && result.routes.length > 0) {
+                    var route = result.routes[0];
+                    var steps = [];
+                    if (route.steps) {
+                        route.steps.forEach(function(step) {
+                            if (step.path) steps = steps.concat(step.path);
+                        });
+                    }
                     var segment = {
                         from: from.name, to: to.name,
-                        distance: Number(path.distance) || 0,   // 该段距离（米）
-                        duration: Number(path.duration) || 0,   // 该段耗时（秒）
-                        tolls: Number(path.tolls) || 0,         // 过路费（元，仅驾车模式有效）
-                        steps: parsePolyline(path.steps || [])  // 路径坐标点数组
+                        distance: route.distance || 0,
+                        duration: route.time || 0,
+                        tolls: routeMode === 'driving' ? route.toll || 0 : 0,
+                        steps: steps.map(function(p) { return [p.lng, p.lat]; })
                     };
                     renderRouteSegment(segment, index);
                 } else {
                     renderRouteSegmentFallback(from, to, index);
                 }
-            } catch(e) {
-                renderRouteSegmentFallback(from, to, index);
+                setTimeout(function() { planRouteSegments(waypoints, index + 1); }, 300);
             }
-        } else {
-            renderRouteSegmentFallback(from, to, index);
-        }
-        // 间隔300ms后递归处理下一段（避免API限流）
-        setTimeout(function() { planRouteSegments(waypoints, index + 1); }, 300);
-    };
-    xhr.onerror = function() {
+        );
+    } catch(e) {
         renderRouteSegmentFallback(from, to, index);
         setTimeout(function() { planRouteSegments(waypoints, index + 1); }, 300);
-    };
-    xhr.timeout = 10000;
-    xhr.ontimeout = function() {
-        renderRouteSegmentFallback(from, to, index);
-        setTimeout(function() { planRouteSegments(waypoints, index + 1); }, 300);
-    };
-    xhr.send();
+    }
 }
 
 /**
