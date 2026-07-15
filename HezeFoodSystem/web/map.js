@@ -3025,18 +3025,20 @@ function planRouteSegments(waypoints, index) {
 
     console.log('[Route] segment', index, from.name, '->', to.name);
 
-    // Use AMap built-in driving/walking service without map binding (we render ourselves)
+    // Use AMap built-in driving/walking service (requires map for API access)
     try {
         var policyMap = { time: 0, distance: 2, toll: 1 };
         var policy = policyMap[routeSortMode] || 0;
         var service = routeMode === 'walking' 
-            ? new AMap.Walking({}) 
-            : new AMap.Driving({ policy: policy });
+            ? new AMap.Walking({ map: map }) 
+            : new AMap.Driving({ map: map, policy: policy });
         service.search(
             from.lng + ',' + from.lat,
             to.lng + ',' + to.lat,
             function(status, result) {
                 console.log('[Route] segment', index, 'callback status:', status);
+                // Immediately clear AMap's auto-rendered route (we render ourselves)
+                try { service.clear(); } catch(e) {}
                 if (status === 'complete' && result.routes && result.routes.length > 0) {
                     var route = result.routes[0];
                     var steps = [];
