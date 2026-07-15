@@ -3026,54 +3026,61 @@ function planRouteSegments(waypoints, index) {
     console.log('[Route] segment', index, 'requesting:', from.name, '->', to.name);
 
     var policyMap = { time: 0, distance: 2, toll: 1 };
-    var policy = policyMap[routeSortMode] || 0;
+    var strategy = policyMap[routeSortMode] || 0;
+    var url = 'https://restapi.amap.com/v3/direction/' + routeMode +
+              '?origin=' + from.lng + ',' + from.lat +
+              '&destination=' + to.lng + ',' + to.lat +
+              '&key=' + AMAP_KEY + '&strategy=' + strategy + '&output=json';
 
-    // Load AMap.Driving or AMap.Walking plugin dynamically
-    var pluginName = routeMode === 'walking' ? 'AMap.Walking' : 'AMap.Driving';
-    AMap.plugin(pluginName, function() {
-        console.log('[Route] segment', index, 'plugin loaded:', pluginName);
-        try {
-            var service = routeMode === 'walking'
-                ? new AMap.Walking({ map: map })
-                : new AMap.Driving({ map: map, policy: policy });
+    var xhr = new XMLHttpRequest();
+    xhr.open('GET', url, true);
+    var done = false;
 
-            var onComplete = function(status, result) {
-                console.log('[Route] segment', index, 'callback:', status, result ? 'has result' : 'no result');
-                try { service.clear(); } catch(e) {}
-                if (status === 'complete' && result.routes && result.routes.length > 0) {
-                    var route = result.routes[0];
-                    var steps = [];
-                    if (route.steps) {
-                        route.steps.forEach(function(step) {
-                            if (step.path) steps = steps.concat(step.path);
-                        });
+    xhr.onreadystatechange = function() {
+        if (done) return;
+        if (xhr.readyState === 4) {
+            done = true;
+            console.log('[Route] segment', index, 'XHR done, status:', xhr.status);
+            if (xhr.status === 200 && xhr.responseText) {
+                try {
+                    var data = JSON.parse(xhr.responseText);
+                    if (data.status === '1' && data.route && data.route.paths && data.route.paths.length > 0) {
+                        var path = data.route.paths[0];
+                        var seg = {
+                            from: from.name, to: to.name,
+                            distance: Number(path.distance) || 0,
+                            duration: Number(path.duration) || 0,
+                            tolls: Number(path.tolls) || 0,
+                            steps: parsePolyline(path.steps || [])
+                        };
+                        renderRouteSegment(seg, index);
+                    } else {
+                        console.log('[Route] segment', index, 'API error:', data.info || 'no data');
+                        renderRouteSegmentFallback(from, to, index);
                     }
-                    var segment = {
-                        from: from.name, to: to.name,
-                        distance: route.distance || 0,
-                        duration: route.time || 0,
-                        tolls: (routeMode === 'driving' && route.toll) ? route.toll : 0,
-                        steps: steps.map(function(p) { return [p.lng, p.lat]; })
-                    };
-                    renderRouteSegment(segment, index);
-                } else {
-                    console.log('[Route] segment', index, 'API failed, fallback. status:', status);
+                } catch(e) {
+                    console.error('[Route] segment', index, 'parse error:', e);
                     renderRouteSegmentFallback(from, to, index);
                 }
-                planRouteSegments(waypoints, index + 1);
-            };
-
-            service.search(
-                new AMap.LngLat(from.lng, from.lat),
-                new AMap.LngLat(to.lng, to.lat),
-                onComplete
-            );
-        } catch(e) {
-            console.error('[Route] segment', index, 'error:', e);
-            renderRouteSegmentFallback(from, to, index);
+            } else {
+                console.log('[Route] segment', index, 'XHR status not 200:', xhr.status);
+                renderRouteSegmentFallback(from, to, index);
+            }
             planRouteSegments(waypoints, index + 1);
         }
-    });
+    };
+    xhr.onerror = function() {
+        if (!done) { done = true; console.log('[Route] segment', index, 'XHR onerror');
+            renderRouteSegmentFallback(from, to, index);
+            planRouteSegments(waypoints, index + 1); }
+    };
+    xhr.timeout = 10000;
+    xhr.ontimeout = function() {
+        if (!done) { done = true; console.log('[Route] segment', index, 'XHR timeout');
+            renderRouteSegmentFallback(from, to, index);
+            planRouteSegments(waypoints, index + 1); }
+    };
+    xhr.send();
 }
 
 /**
