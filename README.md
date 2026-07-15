@@ -10,7 +10,7 @@
 
 | 层次 | 技术 | 用途 |
 |------|------|------|
-| 数据管道 | Python 3 + C++17 | 高德API数据采集/补全/照片获取/道路计算 |
+| 数据管道 | C++17 | 高德API数据采集/补全/照片获取/道路计算 |
 | Web 前端 | Vanilla JS + 高德地图 JS API 2.0 | 地图可视化、人机交互 |
 | 数据存储 | TXT (管道分隔) + JSON + localStorage | 源数据 + 前端数据 + 用户状态 |
 
@@ -25,10 +25,6 @@ HezeFoodSystem/
 │   ├── food.txt                  # 美食数据 (288条, 管道分隔)
 │   ├── spot.txt                  # 景点数据 (110条)
 │   └── road.txt                  # 道路连接 (2,782条)
-│
-├── tools/                        # Python 数据管道脚本（原始版本）
-│   ├── expand_data.py
-│   └── ...
 │
 ├── tools_cpp/                    # C++17 数据管道（编译为单文件可执行）
 │   ├── pipeline.cpp              # 单文件源码 (~1700行)
@@ -137,19 +133,7 @@ python -m http.server 8080
 # 浏览器访问 http://localhost:8080
 ```
 
-### 数据管道（Python版本）
-
-```bash
-cd HezeFoodSystem
-
-python tools/expand_data.py
-python tools/fill_addresses.py
-python tools/fetch_photos.py
-python tools/recalc_roads.py
-python tools/gen_web_json.py
-```
-
-### 数据管道（C++版本，编译后运行）
+### 数据管道（C++，编译后运行）
 
 ```bash
 cd HezeFoodSystem
