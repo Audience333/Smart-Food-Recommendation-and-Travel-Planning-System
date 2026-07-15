@@ -15,7 +15,6 @@
 #include "../structure/HashTable.h"
 #include "../structure/Graph.h"
 #include "../utils/FileManager.h"
-#include "../utils/GeoUtil.h"
 #include "FoodSearchService.h"
 #include "RecommendService.h"
 #include "RouteService.h"
