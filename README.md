@@ -10,7 +10,7 @@
 
 | 层次 | 技术 | 用途 |
 |------|------|------|
-| 数据管道 | Python 3 + urllib | 高德API数据采集/地址补全/照片获取/道路计算 |
+| 数据管道 | Python 3 + C++17 | 高德API数据采集/补全/照片获取/道路计算 |
 | Web 前端 | Vanilla JS + 高德地图 JS API 2.0 | 地图可视化、人机交互 |
 | 数据存储 | TXT (管道分隔) + JSON + localStorage | 源数据 + 前端数据 + 用户状态 |
 
@@ -26,13 +26,15 @@ HezeFoodSystem/
 │   ├── spot.txt                  # 景点数据 (110条)
 │   └── road.txt                  # 道路连接 (2,782条)
 │
-├── tools/                        # Python 数据管道脚本
-│   ├── expand_data.py            # 高德 POI 搜索 + 12维标签生成
-│   ├── fill_addresses.py         # 逆地理编码地址补全
-│   ├── fetch_photos.py           # POI 详情照片获取
-│   ├── gen_web_json.py           # TXT → JSON 转换
-│   ├── recalc_roads.py           # 道路连接重算 (+ 驾车API)
-│   └── fetch_amap_data.py        # 原始高德 POI 采集脚本
+├── tools/                        # Python 数据管道脚本（原始版本）
+│   ├── expand_data.py
+│   └── ...
+│
+├── tools_cpp/                    # C++17 数据管道（编译为单文件可执行）
+│   ├── pipeline.cpp              # 单文件源码 (~1700行)
+│   ├── pipeline.exe              # 编译产物
+│   ├── build.bat                 # Windows 编译脚本
+│   └── build.sh                  # Linux/Mac 编译脚本
 │
 └── web/                          # Web 前端
     ├── index.html                # 主页面 (11个功能面板)
@@ -135,26 +137,38 @@ python -m http.server 8080
 # 浏览器访问 http://localhost:8080
 ```
 
-### 数据管道（更新数据时使用）
+### 数据管道（Python版本）
 
 ```bash
 cd HezeFoodSystem
 
-# 获取最新高德 POI 数据
 python tools/expand_data.py
-
-# 补全缺失地址
 python tools/fill_addresses.py
-
-# 获取门店照片
 python tools/fetch_photos.py
-
-# 重新计算道路连接
 python tools/recalc_roads.py
-
-# 生成前端 JSON
 python tools/gen_web_json.py
 ```
+
+### 数据管道（C++版本，编译后运行）
+
+```bash
+cd HezeFoodSystem
+
+# 编译
+g++ -std=c++17 -O2 tools_cpp/pipeline.cpp -o tools_cpp/pipeline.exe
+
+# 逐步运行
+tools_cpp\pipeline.exe expand
+tools_cpp\pipeline.exe fill
+tools_cpp\pipeline.exe photos
+tools_cpp\pipeline.exe roads
+tools_cpp\pipeline.exe json
+
+# 或一键运行全部
+tools_cpp\pipeline.exe all
+```
+
+C++管道通过 `popen("curl ...")` 调用高德API，无需外部JSON库，使用定向字符串解析提取字段。输出与Python版本完全一致。
 
 ## 数据概览
 
