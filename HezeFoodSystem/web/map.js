@@ -3022,15 +3022,21 @@ function planRouteSegments(waypoints, index) {
 
     var from = waypoints[index];
     var to = waypoints[index + 1];
-    var self = this;
 
-    // Use AMap built-in driving/walking service (avoids CORS issues with restapi.amap.com)
+    console.log('[Route] segment', index, from.name, '->', to.name);
+
+    // Use AMap built-in driving/walking service without map binding (we render ourselves)
     try {
-        var service = routeMode === 'walking' ? new AMap.Walking({ map: map }) : new AMap.Driving({ map: map, policy: 0 });
+        var policyMap = { time: 0, distance: 2, toll: 1 };
+        var policy = policyMap[routeSortMode] || 0;
+        var service = routeMode === 'walking' 
+            ? new AMap.Walking({}) 
+            : new AMap.Driving({ policy: policy });
         service.search(
-            new AMap.LngLat(from.lng, from.lat),
-            new AMap.LngLat(to.lng, to.lat),
+            from.lng + ',' + from.lat,
+            to.lng + ',' + to.lat,
             function(status, result) {
+                console.log('[Route] segment', index, 'callback status:', status);
                 if (status === 'complete' && result.routes && result.routes.length > 0) {
                     var route = result.routes[0];
                     var steps = [];
@@ -3043,19 +3049,21 @@ function planRouteSegments(waypoints, index) {
                         from: from.name, to: to.name,
                         distance: route.distance || 0,
                         duration: route.time || 0,
-                        tolls: routeMode === 'driving' ? route.toll || 0 : 0,
+                        tolls: (routeMode === 'driving' && route.toll) ? route.toll : 0,
                         steps: steps.map(function(p) { return [p.lng, p.lat]; })
                     };
                     renderRouteSegment(segment, index);
                 } else {
+                    console.log('[Route] segment', index, 'falling back, status:', status);
                     renderRouteSegmentFallback(from, to, index);
                 }
-                setTimeout(function() { planRouteSegments(waypoints, index + 1); }, 300);
+                planRouteSegments(waypoints, index + 1);
             }
         );
     } catch(e) {
+        console.error('[Route] segment', index, 'error:', e);
         renderRouteSegmentFallback(from, to, index);
-        setTimeout(function() { planRouteSegments(waypoints, index + 1); }, 300);
+        planRouteSegments(waypoints, index + 1);
     }
 }
 
