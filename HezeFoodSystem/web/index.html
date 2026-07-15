@@ -1,38 +1,81 @@
+<!--
+============================================
+页面整体结构说明
+============================================
+本页面是"菏泽美食推荐与城市漫游规划系统"的主界面，采用经典的三段式布局：
+  1. 顶部标题栏 (div.header)       —— 标题、撤销/重做、收藏、排行等全局工具
+  2. 左侧边栏 (div.sidebar)        —— 图层控制、搜索、统计、路线规划、分类、用户画像、一日游推荐
+  3. 右侧地图容器 (div.map-container) —— 高德地图展示区域及缩放控件
+
+技术栈：HTML5 + CSS3 + 原生JavaScript，地图引擎为高德地图 JS API。
+所有交互逻辑由同目录下的 map.js 文件驱动。
+============================================
+-->
 <!DOCTYPE html>
 <html lang="zh-CN">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>菏泽美食推荐与城市漫游规划系统</title>
+    <!-- 全局样式表，定义页面布局、面板、按钮、信息窗口等所有视觉样式 -->
     <link rel="stylesheet" href="style.css">
+    <!-- 高德地图 JS API Loader，用于加载地图核心库 -->
     <script src="https://webapi.amap.com/loader.js"></script>
 </head>
 <body>
+    <!--
+    ==========================================
+    顶部标题栏 —— 全局工具栏区域
+    ==========================================
+    包含系统标题及三个核心工具模块：
+      - 操作历史（撤销/重做/历史记录下拉）
+      - 收藏夹（星标收藏的POI列表）
+      - 排行榜（按人气/性价比/收藏数量排序）
+    z-index=100 确保下拉菜单覆盖在下方地图和侧边栏之上
+    -->
     <div class="header">
         <div class="header-top">
+            <!-- 系统标题区域 -->
             <div class="header-title">
                 <h1>菏泽美食推荐与城市漫游规划系统</h1>
-                <p>基于 C++ 数据结构 + 高德地图可视化</p>
             </div>
+            <!-- 全局工具栏：包含撤销/重做/历史、收藏、排行三个下拉面板 -->
             <div class="header-tools">
+                <!--
+                操作历史工具组
+                功能：支持撤销和重做最近的地图操作（如标记移动、路线规划等），
+                并可通过"历史"按钮查看完整的操作记录列表
+                -->
                 <div class="header-tool-group">
                     <button id="btnHistoryUndo" class="header-tool-btn">&#x2190; 撤销</button>
                     <button id="btnHistoryRedo" class="header-tool-btn">重做 &#x2192;</button>
                     <button class="header-tool-btn" id="btnHistoryDropdown">&#x25BC; 历史</button>
+                    <!-- 操作历史下拉面板，初始隐藏，点击"历史"按钮时展开 -->
                     <div id="historyDropdown" class="header-dropdown" style="display:none;">
                         <div class="header-dropdown-header"><span>操作历史</span><span id="btnHistoryClear" class="header-dropdown-clear">清空</span></div>
                         <div id="historyDropdownList" class="header-dropdown-list"></div>
                     </div>
                 </div>
+                <!--
+                收藏夹工具组
+                功能：显示用户收藏的POI（美食/景点）列表，括号内显示收藏总数，
+                点击可跳转到对应地图位置
+                -->
                 <div class="header-tool-group header-dropdown-trigger" id="favoritesPanel">
                     <button class="header-tool-btn">&#9733; 收藏 <span id="favoritesCount">(0)</span></button>
                     <div class="header-dropdown" style="display:none;">
                         <div id="favoritesList" class="header-dropdown-list"><div class="favorites-empty">暂无收藏</div></div>
                     </div>
                 </div>
+                <!--
+                排行榜工具组
+                功能：展示POI排行榜，支持按人气、性价比、收藏数三个维度切换，
+                可切换正序/倒序排序
+                -->
                 <div class="header-tool-group header-dropdown-trigger" id="rankingsPanel">
                     <button class="header-tool-btn">排行</button>
                     <div class="header-dropdown" style="display:none;">
+                        <!-- 排行维度切换标签 + 排序方向按钮 -->
                         <div class="ranking-tabs">
                             <span class="ranking-tab active" data-tab="popular">人气</span>
                             <span class="ranking-tab" data-tab="value">性价比</span>
@@ -46,26 +89,56 @@
         </div>
     </div>
 
+    <!--
+    ==========================================
+    主容器 —— flex布局，左侧边栏 + 右侧地图
+    ==========================================
+    .container 使用 flex 布局撑满剩余高度（body 为 flex column），
+    左侧 sidebar 固定宽度 260px，右侧 map-container 使用 flex:1 填满剩余空间
+    -->
     <div class="container">
+        <!--
+        ==========================================
+        左侧边栏 —— 功能面板集中区域
+        ==========================================
+        包含7个可折叠面板（panel），默认全部折叠（class="collapsed"）。
+        每个面板由 panel-header（标题+三角箭头）和 panel-body（面板内容）组成，
+        点击标题可展开/折叠面板，panel-toggle 箭头会旋转180度表示状态。
+        -->
         <div class="sidebar">
+            <!--
+            面板1: 图层控制
+            功能：控制地图上美食标记和景点标记的显示/隐藏，
+            以及"仅显示营业中"的过滤开关
+            -->
             <div class="panel collapsed">
                 <h3 class="panel-header">图层控制 <span class="panel-toggle">▼</span></h3>
                 <div class="panel-body">
                 <div class="control-group">
                     <div class="toggle-btn-row">
+                        <!-- 切换美食标记图层的显隐，active状态表示当前已显示 -->
                         <button id="btnToggleFood" class="toggle-btn active">美食标记</button>
+                        <!-- 切换景点标记图层的显隐，active状态表示当前已显示 -->
                         <button id="btnToggleSpot" class="toggle-btn active">景点标记</button>
+                        <!-- 过滤仅显示当前营业中的美食店铺，激活时非营业中店铺在地图上隐藏 -->
                         <button id="btnOpenOnly" class="toggle-btn">仅营业中</button>
                     </div>
                 </div>
                 </div>
             </div>
 
+            <!--
+            面板2: 搜索
+            功能：按名称、地址或标签搜索POI，支持按类型（全部/美食/景点）筛选，
+            搜索结果列表支持点击定位到地图对应位置
+            -->
             <div class="panel collapsed">
                 <h3 class="panel-header">搜索 <span class="panel-toggle">▼</span></h3>
                 <div class="panel-body">
                 <div class="search-box">
+                    <!-- 搜索输入框：支持名称、地址、标签的模糊匹配搜索 -->
                     <input type="text" id="searchInput" class="search-input" placeholder="搜索名称、地址或标签...">
+                    <!-- 搜索类型筛选标签：默认"全部"，点击切换为仅搜索美食或仅搜索景点 -->
                     <div class="search-type">
                         <span class="search-type-tag active" data-type="all">全部</span>
                         <span class="search-type-tag" data-type="food">美食</span>
@@ -73,6 +146,7 @@
                     </div>
 
                 </div>
+                <!-- 搜索结果面板，初始隐藏，有搜索结果时显示 -->
                 <div id="searchResults" class="search-results" style="display:none;">
                     <div class="search-results-header">
                         <span id="searchResultCount">0</span> 个结果
@@ -82,6 +156,10 @@
                 </div>
             </div>
 
+            <!--
+            面板3: 数据统计
+            功能：实时显示当前加载的美食总数和景点总数
+            -->
             <div class="panel collapsed">
                 <h3 class="panel-header">数据统计 <span class="panel-toggle">▼</span></h3>
                 <div class="panel-body">
@@ -98,26 +176,39 @@
                 </div>
             </div>
 
+            <!--
+            面板4: 路线规划
+            功能：设置起点、途经点（最多5个）、终点，选择出行方式（驾车/步行），
+            并选择排序策略（时间优先/距离优先/过路费少），
+            规划后可查看路线摘要和分段详情
+            -->
             <div class="panel collapsed">
                 <h3 class="panel-header">路线规划 <span class="panel-toggle">▼</span></h3>
                 <div class="panel-body">
                 <div class="route-planner">
+                    <!-- 出行方式选择：驾车（使用高德驾车导航引擎）/ 步行（使用高德步行导航引擎） -->
                     <div class="route-mode">
                         <span class="route-mode-btn active" data-mode="driving">驾车</span>
                         <span class="route-mode-btn" data-mode="walking">步行</span>
                     </div>
+                    <!-- 起点选择区域 -->
                     <div class="route-select">
                         <label class="route-select-label">起点</label>
+                        <!-- 起点搜索输入框：输入关键词过滤下拉选项 -->
                         <input type="text" id="routeStartSearch" class="search-input" placeholder="输入名称搜索..." style="margin-bottom:4px;">
+                        <!-- 起点下拉选择框：列出所有可选的POI及城市别目的地 -->
                         <select id="routeStart" class="route-select-input">
                             <option value="">-- 选择起点 --</option>
                         </select>
                     </div>
+                    <!-- 途经点管理区域，最多添加5个途经点 -->
                     <div class="route-select">
                         <label class="route-select-label">途经点 <span style="font-size:11px;color:#999;">(最多5个)</span></label>
                         <div id="routeWaypoints" class="route-waypoints"></div>
+                        <!-- 添加途经点按钮：点击后新增一个途经点选择行 -->
                         <button id="btnAddWaypoint" class="route-add-btn">+ 添加途经点</button>
                     </div>
+                    <!-- 终点选择区域 -->
                     <div class="route-select">
                         <label class="route-select-label">终点</label>
                         <input type="text" id="routeEndSearch" class="search-input" placeholder="输入名称搜索..." style="margin-bottom:4px;">
@@ -125,6 +216,7 @@
                             <option value="">-- 选择终点 --</option>
                         </select>
                     </div>
+                    <!-- 排序策略选择：影响高德路线规划API返回结果的偏好策略 -->
                     <div class="route-sort">
                         <label class="route-select-label">排序策略</label>
                         <div class="route-mode">
@@ -133,46 +225,70 @@
                             <span class="route-mode-btn" data-sort="toll">过路费少</span>
                         </div>
                     </div>
+                    <!-- 操作按钮 -->
                     <div class="route-actions">
                         <button id="btnPlanRoute" class="route-plan-btn">规划路线</button>
                         <button id="btnClearRoute" class="route-clear-btn">清空</button>
                     </div>
                 </div>
+                <!-- 路线规划结果展示，初始隐藏，规划成功后显示 -->
                 <div id="routeDetail" class="route-detail" style="display:none;">
+                    <!-- 路线摘要：总距离、总时长、过路费等 -->
                     <div id="routeSummary" class="route-summary"></div>
+                    <!-- 路线分段详情：每段起止点及行驶说明 -->
                     <div id="routeSegments" class="route-segments"></div>
                 </div>
                 </div>
             </div>
 
+            <!--
+            面板5: 美食分类
+            功能：以标签云形式展示所有美食分类（如烧烤、火锅、小吃等），
+            点击标签可在地图上仅显示该分类的美食标记，支持多选
+            -->
             <div class="panel collapsed">
                 <h3 class="panel-header">美食分类 <span class="panel-toggle">▼</span></h3>
                 <div class="panel-body">
+                <!-- 分类标签由JS动态生成并插入此处 -->
                 <div class="category-filters" id="categoryFilters"></div>
                 </div>
             </div>
 
+            <!--
+            面板6: 用户画像
+            功能：基于用户的收藏记录分析口味偏好、价格偏好等，
+            支持编辑和保存自定义偏好，初始状态需收藏美食后才显示画像
+            -->
             <div class="panel collapsed">
                 <h3 class="panel-header">用户画像 <span class="panel-toggle">▼</span></h3>
                 <div class="panel-body">
                     <div style="margin-bottom:8px;">
+                        <!-- 编辑按钮：点击后切换为编辑模式，显示保存/取消/恢复默认按钮 -->
                         <button id="btnEditProfile" class="panel-action-btn">编辑</button>
                         <button id="btnSaveProfile" class="panel-action-btn" style="display:none;">保存</button>
                         <button id="btnCancelProfile" class="panel-action-btn" style="display:none;">取消</button>
                         <button id="btnRestoreProfile" class="panel-action-btn" style="display:none;">恢复默认</button>
                     </div>
+                    <!-- 用户画像展示区域，由JS根据收藏数据动态渲染 -->
                     <div id="profilePanel" class="profile-content">
                         <div class="profile-empty">收藏美食后可查看画像</div>
                     </div>
                 </div>
             </div>
 
+            <!--
+            面板7: 一日游推荐
+            功能：基于用户收藏的POI自动生成一日游路线推荐，
+            展示最佳路线配以备选方案，支持"换一批"刷新和"采用"路线
+            -->
             <div class="panel collapsed">
                 <h3 class="panel-header">一日游推荐 <span class="panel-toggle">▼</span></h3>
                 <div class="panel-body">
                     <div style="margin-bottom:8px;text-align:right;">
+                        <!-- 换一批按钮：重新随机生成一组一日游推荐路线 -->
                         <button id="btnRefreshTour" class="panel-action-btn">换一批</button>
                     </div>
+                    <!-- 一日游推荐内容由JS动态生成 -->
                     <div id="dailyTourList" class="daily-tour-content">
                         <div class="profile-empty">收藏POI后可生成推荐</div>
                     </div>
@@ -180,8 +296,18 @@
             </div>
         </div>
 
+        <!--
+        ==========================================
+        右侧地图容器 —— 高德地图展示区
+        ==========================================
+        包含两个核心元素：
+          1. #map —— 高德地图的挂载容器，由 map.js 初始化
+          2. .map-controls —— 浮在地图右上角的缩放/重置控件（绝对定位）
+        -->
         <div class="map-container">
+            <!-- 高德地图渲染容器，宽高由 CSS 设为 100% 撑满父容器 -->
             <div id="map"></div>
+            <!-- 地图控件按钮组：放大（+）、缩小（-）、重置视图（R），绝对定位在地图右上角 -->
             <div class="map-controls">
                 <button id="btnZoomIn" title="放大">+</button>
                 <button id="btnZoomOut" title="缩小">-</button>
@@ -190,11 +316,7 @@
         </div>
     </div>
 
-    <div class="footer">
-        <span>菏泽美食推荐与城市漫游规划系统</span>
-        <span>C++ 数据结构课程设计</span>
-    </div>
-
+    <!-- 主逻辑脚本：包含地图初始化、数据加载、路线规划、用户交互等全部功能 -->
     <script src="map.js"></script>
 </body>
 </html>
