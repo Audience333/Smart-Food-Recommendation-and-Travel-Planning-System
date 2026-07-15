@@ -71,6 +71,20 @@
 #define M_PI 3.14159265358979323846
 #endif
 
+// 对JSON字符串值进行转义：将双引号和反斜杠替换为转义序列
+std::string json_escape(const std::string& s) {
+    std::string result;
+    for (char c : s) {
+        if (c == '"') result += "\\\"";
+        else if (c == '\\') result += "\\\\";
+        else if (c == '\n') result += "\\n";
+        else if (c == '\r') result += "\\r";
+        else if (c == '\t') result += "\\t";
+        else result += c;
+    }
+    return result;
+}
+
 using namespace std;
 
 // ===================== 全局路径常量 =====================
@@ -2190,14 +2204,14 @@ int cmd_json() {
             stringstream ss;
             ss << "  {";
             ss << "\"id\":" << fid;
-            ss << ",\"name\":\"" << name << "\"";
+            ss << ",\"name\":\"" << json_escape(name) << "\"";
             ss << ",\"lng\":" << fixed << setprecision(6) << lng;
             ss << ",\"lat\":" << fixed << setprecision(6) << lat;
             ss << ",\"price\":" << fixed << setprecision(0) << price;
             ss << ",\"score\":" << fixed << setprecision(1) << score;
-            ss << ",\"category\":\"" << category << "\"";
-            ss << ",\"address\":\"" << address << "\"";
-            ss << ",\"opentime\":\"" << opentime << "\"";
+            ss << ",\"category\":\"" << json_escape(category) << "\"";
+            ss << ",\"address\":\"" << json_escape(address) << "\"";
+            ss << ",\"opentime\":\"" << json_escape(opentime) << "\"";
             ss << ",\"photos\":[";
             for (size_t i = 0; i < photos.size(); i++) {
                 if (i > 0) ss << ",";
@@ -2267,16 +2281,16 @@ int cmd_json() {
             stringstream ss;
             ss << "  {";
             ss << "\"id\":" << sid;
-            ss << ",\"name\":\"" << name << "\"";
-            ss << ",\"description\":\"" << description << "\"";
-            ss << ",\"address\":\"" << address << "\"";
+            ss << ",\"name\":\"" << json_escape(name) << "\"";
+            ss << ",\"description\":\"" << json_escape(description) << "\"";
+            ss << ",\"address\":\"" << json_escape(address) << "\"";
             ss << ",\"lng\":" << fixed << setprecision(6) << lng;
             ss << ",\"lat\":" << fixed << setprecision(6) << lat;
-            ss << ",\"type\":\"" << type << "\"";
-            ss << ",\"ticketInfo\":\"" << ticketInfo << "\"";
-            ss << ",\"openingTime\":\"" << openingTime << "\"";
-            ss << ",\"recommendDuration\":\"" << recommendDuration << "\"";
-            ss << ",\"bestSeason\":\"" << bestSeason << "\"";
+            ss << ",\"type\":\"" << json_escape(type) << "\"";
+            ss << ",\"ticketInfo\":\"" << json_escape(ticketInfo) << "\"";
+            ss << ",\"openingTime\":\"" << json_escape(openingTime) << "\"";
+            ss << ",\"recommendDuration\":\"" << json_escape(recommendDuration) << "\"";
+            ss << ",\"bestSeason\":\"" << json_escape(bestSeason) << "\"";
             ss << ",\"score\":" << fixed << setprecision(1) << score;
             ss << ",\"photos\":[";
             for (size_t i = 0; i < photos.size(); i++) {
