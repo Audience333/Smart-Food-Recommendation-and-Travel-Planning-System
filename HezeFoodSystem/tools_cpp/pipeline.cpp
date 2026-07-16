@@ -78,6 +78,20 @@
 #define M_PI 3.14159265358979323846
 #endif
 
+// 验证工作目录是否正确：data/和web/目录必须存在，防止从tools_cpp子目录误运行
+bool validate_workdir() {
+    std::ifstream dtest("data/food.txt"), wtest("web/index.html");
+    bool ok = dtest.good() && wtest.good();
+    dtest.close(); wtest.close();
+    if (!ok) {
+        printf("错误：当前目录不是项目根目录(HezeFoodSystem/)\n");
+        printf("请切换到项目根目录后重新运行。例如：\n");
+        printf("  cd HezeFoodSystem\n");
+        printf("  tools_cpp\\pipeline.exe json\n");
+    }
+    return ok;
+}
+
 // 对JSON字符串值进行转义：将双引号和反斜杠替换为转义序列
 std::string json_escape(const std::string& s) {
     std::string result;
@@ -994,6 +1008,7 @@ string format_spot_line(int id, const string& name, const string& description,
 //
 // 速率限制：每个关键词搜索后延迟300ms，每个区县处理有额外延迟。
 int cmd_expand() {
+    if (!validate_workdir()) return 1;
     printf("============================================================\n");
     printf("  POI Data Expansion (Amap API)\n");
     printf("============================================================\n");
@@ -1278,6 +1293,7 @@ string reverse_geocode(const string& key, double lng, double lat) {
 //
 // 速率限制：每次逆地理编码调用后延迟100ms
 int cmd_fill() {
+    if (!validate_workdir()) return 1;
     printf("============================================================\n");
     printf("  Fill Addresses via Reverse Geocoding\n");
     printf("============================================================\n");
@@ -1548,6 +1564,7 @@ string fetch_photos_by_id(const string& key, const string& amap_id) {
 //
 // 速率限制：每条POI处理后有150ms延迟（含两次API调用）
 int cmd_photos() {
+    if (!validate_workdir()) return 1;
     printf("============================================================\n");
     printf("  Fetch POI Photos\n");
     printf("============================================================\n");
@@ -1769,6 +1786,7 @@ pair<int,int> amap_driving(const string& key, double olng, double olat, double d
 //   - 跨区道路乘以1.3系数模拟实际道路的绕行
 //   - 时间由距离÷40km/h估算
 int cmd_roads() {
+    if (!validate_workdir()) return 1;
     printf("============================================================\n");
     printf("  Recalculate Road Connections (DS-Integrated v2.0)\n");
     printf("============================================================\n");
@@ -2189,6 +2207,7 @@ int cmd_roads() {
 // 字段识别策略（景点）：
 //   从第12个字段开始，含"http"或";"的为照片字段，其余为标签字段。
 int cmd_json() {
+    if (!validate_workdir()) return 1;
     printf("============================================================\n");
     printf("  Generate Web JSON from TXT\n");
     printf("============================================================\n");
