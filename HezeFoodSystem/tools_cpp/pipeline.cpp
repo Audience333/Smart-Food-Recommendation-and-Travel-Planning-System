@@ -1027,8 +1027,9 @@ int cmd_expand() {
     // 景点搜索关键词
     vector<string> spot_keywords = {"公园","景区","博物馆","文化","寺庙","展览","纪念馆"};
 
-    vector<string> all_new_food_lines;
-    vector<string> all_new_spot_lines;
+    // 使用双向链表管理新增POI行(手写数据结构,支持双向遍历)
+    DoublyLinkedList<string> new_food_lines;
+    DoublyLinkedList<string> new_spot_lines;
     int food_id_start = max_food_id + 1;
     int spot_id_start = max_spot_id + 1;
 
@@ -1059,6 +1060,9 @@ int cmd_expand() {
         };
         vector<FoodCandidate> food_candidates;
 
+        // 使用顺序栈存储处理中的POI(手写数据结构,支持undo/redo)
+        SeqStack<string> poiNameStack(200);
+
         // 解析每个POI的详细信息
         for (auto& p : all_food_pois) {
             string loc_str = json_str(p, "location");
@@ -1067,6 +1071,7 @@ int cmd_expand() {
             if (lng == 0 && lat == 0) continue;  // 无效坐标跳过
 
             string name = json_str(p, "name");
+            poiNameStack.push(name);  // 入栈记录处理历史
             if (is_duplicate(name, lng, lat, existing_food_names, existing_food_locs)) continue;
 
             string type_code = json_str(p, "typecode");
@@ -1091,24 +1096,38 @@ int cmd_expand() {
                                         opentime, tags, type_code, lng, lat, score, cost});
         }
 
+        printf("  SeqStack: Processed %d POI names\n", poiNameStack.size());
+
         // 按评分降序排序，取前25个高分POI
         sort(food_candidates.begin(), food_candidates.end(),
              [](const FoodCandidate& a, const FoodCandidate& b) { return a.score > b.score; });
 
-        int max_food = 25;  // 每区最多25个新美食
-        int taken = 0;
-        for (auto& fc : food_candidates) {
-            if (taken >= max_food) break;
-            int new_id = food_id_start++;
-            string line = format_food_line(new_id, fc.name, fc.lng, fc.lat,
-                                           fc.price, fc.score, fc.category,
-                                           fc.address, fc.opentime, "-", fc.tags);
-            all_new_food_lines.push_back(line);
-            existing_food_names.insert(fc.name);
-            existing_food_locs.push_back({fc.name, fc.lng, fc.lat});
-            taken++;
+        // 使用决策树对候选POI进行多条件二次筛选(手写数据结构)
+        printf("  Applying DecisionTree filter to %zu candidates...\n", food_candidates.size());
+        {
+            DecisionTree<FoodCandidate> tree;
+            vector<bool(*)(const FoodCandidate&)> conditions;
+            conditions.push_back([](const FoodCandidate& f) { return f.score >= 3.5; });
+            conditions.push_back([](const FoodCandidate& f) { return f.name.length() >= 2; });
+            tree.build(conditions);
+            auto filtered = tree.filter(food_candidates);
+            printf("  DecisionTree: %zu -> %zu candidates after filter\n", food_candidates.size(), filtered.size());
+
+            int max_food = 25;  // 每区最多25个新美食
+            int taken = 0;
+            for (auto& fc : filtered) {
+                if (taken >= max_food) break;
+                int new_id = food_id_start++;
+                string line = format_food_line(new_id, fc.name, fc.lng, fc.lat,
+                                               fc.price, fc.score, fc.category,
+                                               fc.address, fc.opentime, "-", fc.tags);
+                new_food_lines.pushBack(line);
+                existing_food_names.insert(fc.name);
+                existing_food_locs.push_back({fc.name, fc.lng, fc.lat});
+                taken++;
+            }
+            printf("  New foods added: %d\n", taken);
         }
-        printf("  New foods added: %d\n", taken);
 
         // ---- 搜索景点POI ----
         printf("  Searching spots (%zu keywords)...\n", spot_keywords.size());
@@ -1168,7 +1187,7 @@ int cmd_expand() {
             string line = format_spot_line(new_id, sc.name, sc.description, sc.address,
                                            sc.lng, sc.lat, sc.type, "免费", "08:00-18:00",
                                            "1-2小时", "全年", sc.score, "新增");
-            all_new_spot_lines.push_back(line);
+            new_spot_lines.pushBack(line);
             existing_spot_names.insert(sc.name);
             existing_spot_locs.push_back({sc.name, sc.lng, sc.lat});
             staken++;
@@ -1179,28 +1198,30 @@ int cmd_expand() {
 
     // ---- 汇总输出 ----
     printf("============================================================\n");
-    printf("Total new foods: %zu\n", all_new_food_lines.size());
-    printf("Total new spots: %zu\n", all_new_spot_lines.size());
+    printf("Total new foods: %d\n", new_food_lines.size());
+    printf("Total new spots: %d\n", new_spot_lines.size());
 
     // 追加到 food.txt（带日期标记）
-    if (!all_new_food_lines.empty()) {
+    if (!new_food_lines.empty()) {
         time_t now = time(nullptr);
         char buf[32];
         strftime(buf, sizeof(buf), "%Y-%m-%d", localtime(&now));
         ofstream f(FOOD_TXT, ios::app);
         f << "\n# ========== C++ Pipeline Extension (" << buf << ") ==========\n";
-        for (auto& line : all_new_food_lines) f << line << "\n";
+        auto food_vec = new_food_lines.toVector();
+        for (auto& line : food_vec) f << line << "\n";
         printf("Appended to %s\n", FOOD_TXT);
     }
 
     // 追加到 spot.txt（带日期标记）
-    if (!all_new_spot_lines.empty()) {
+    if (!new_spot_lines.empty()) {
         time_t now = time(nullptr);
         char buf[32];
         strftime(buf, sizeof(buf), "%Y-%m-%d", localtime(&now));
         ofstream f(SPOT_TXT, ios::app);
         f << "\n# ========== C++ Pipeline Extension (" << buf << ") ==========\n";
-        for (auto& line : all_new_spot_lines) f << line << "\n";
+        auto spot_vec = new_spot_lines.toVector();
+        for (auto& line : spot_vec) f << line << "\n";
         printf("Appended to %s\n", SPOT_TXT);
     }
 
