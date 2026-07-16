@@ -228,72 +228,45 @@ var currentInfoWindow = null;
  * 撤销/重做时，通过 _applyReverse() 和 _applyForward() 调用各功能模块的 API 来恢复/重放状态。
  */
 var HistoryManager = {
-    /** @type {Array} 操作记录栈，按时间顺序存储（栈底=最早，栈顶=最新） */
-    stack: [],
-    /** @type {number} 当前指针位置（索引），-1 表示空栈 */
-    pointer: -1,
-    /** @type {number} 最大保存的操作记录数 */
-    maxSize: 50,
 
     /**
      * push(type, data): 向历史栈推入一条新的操作记录
      *
-     * 【执行流程】
-     * 1. 如果指针不在栈顶（说明用户之前做了撤销，有"未来"操作可以重做），
-     *    则截断指针之后的所有"未来"操作——这是标准的"新操作清空重做栈"行为
-     * 2. 将新操作记录推入栈顶，附带当前时间戳的格式化字符串
-     * 3. 如果栈超过最大容量（50条），移除最早的记录（栈底出队）
-     * 4. 指针更新为栈顶索引
-     * 5. 刷新 UI（按钮启用/禁用状态和下拉列表内容）
-     *
-     * @param {string} type - 操作类型标识（'view'|'filter'|'search'|'fav_add'|'fav_del'|'route'）
-     * @param {object} data - 操作附加数据（不同的操作类型携带不同的数据结构）
+     * @param {string} type - 操作类型标识
+     * @param {object} data - 操作附加数据
      */
     push: function(type, data) {
-        // 截断指针之后的"未来"操作（新操作清空重做栈）
-        if (this.pointer < this.stack.length - 1) { this.stack = this.stack.slice(0, this.pointer + 1); }
-        // 推入新操作记录，time 使用中文本地化时间格式（如 "14:30"）
-        this.stack.push({ type: type, data: data, time: new Date().toLocaleTimeString('zh-CN', {hour:'2-digit',minute:'2-digit'}) });
-        // 容量溢出时移除最早记录（shift 弹出栈底），指针保持不变（因为栈长度已减1）
-        if (this.stack.length > this.maxSize) this.stack.shift();
-        this.pointer = this.stack.length - 1;
+        historyStack.push({ type: type, data: data, time: new Date().toLocaleTimeString('zh-CN', {hour:'2-digit',minute:'2-digit'}) });
         this.updateUI();
     },
 
     /**
      * undo(): 撤销一步操作
-     * 将指针向前移动一位，获取当前位置的操作记录，调用 _applyReverse() 执行"撤销逻辑"。
-     * 执行前通过 canUndo() 检查是否有可撤销的操作。
      */
     undo: function() {
         if (!this.canUndo()) return;
-        var item = this.stack[this.pointer]; this.pointer--;
+        var item = historyStack.undo();
         this._applyReverse(item); this.updateUI();
     },
 
     /**
      * redo(): 重做一步之前被撤销的操作
-     * 将指针向后移动一位，获取新位置的操作记录，调用 _applyForward() 执行"重做逻辑"。
-     * 执行前通过 canRedo() 检查是否有可重做的操作。
      */
     redo: function() {
         if (!this.canRedo()) return;
-        this.pointer++;
-        var item = this.stack[this.pointer];
+        var item = historyStack.redo();
         this._applyForward(item); this.updateUI();
     },
 
     /**
      * canUndo(): 判断是否可以撤销
-     * @returns {boolean} pointer >= 0 说明栈中至少有一条已执行的操作
      */
-    canUndo: function() { return this.pointer >= 0; },
+    canUndo: function() { return historyStack.canUndo(); },
 
     /**
      * canRedo(): 判断是否可以重做
-     * @returns {boolean} 指针不在栈顶（pointer < stack.length - 1）说明有被撤销的操作可以重做
      */
-    canRedo: function() { return this.pointer < this.stack.length - 1; },
+    canRedo: function() { return historyStack.canRedo(); },
 
     /**
      * _applyReverse(item): 执行指定操作的反向（撤销）逻辑
@@ -415,13 +388,12 @@ var HistoryManager = {
     _renderDropdown: function() {
         var list = document.getElementById('historyDropdownList'); if (!list) return;
         var html = '';
-        // 倒序遍历：最新的记录显示在最上面
-        for (var i = this.stack.length - 1; i >= 0; i--) {
-            var item = this.stack[i];
-            // 根据与 pointer 的位置关系选择不同的标记符号和 CSS 类名
-            var m = i === this.pointer ? '&#9654;' : (i > this.pointer ? '&#9679;' : '&#9675;');
-            var cls = i === this.pointer ? 'history-current' : (i > this.pointer ? 'history-done' : 'history-undone');
-            // 操作类型 → 中文标签的映射表
+        var data = historyStack.getAll();
+        var cur = historyStack.getCurrent();
+        for (var i = data.length - 1; i >= 0; i--) {
+            var item = data[i];
+            var m = i === cur ? '&#9654;' : (i > cur ? '&#9679;' : '&#9675;');
+            var cls = i === cur ? 'history-current' : (i > cur ? 'history-done' : 'history-undone');
             var labels = { view:'查看', filter:'筛选', search:'搜索', fav_add:'收藏', fav_del:'取消收藏', route:'路线' };
             html += '<div class="history-item '+cls+'" data-index="'+i+'"><span class="history-marker">'+m+'</span><span class="history-time">'+item.time+'</span><span class="history-label">'+ (labels[item.type]||item.type) +'</span></div>';
         }
@@ -430,9 +402,8 @@ var HistoryManager = {
 
     /**
      * clear(): 清空所有历史记录
-     * 重置栈数组和指针，刷新 UI（禁用撤销/重做按钮，清空下拉列表）。
      */
-    clear: function() { this.stack = []; this.pointer = -1; this.updateUI(); }
+    clear: function() { historyStack.clear(); this.updateUI(); }
 };
 
 // ============================================================================
@@ -470,69 +441,29 @@ var HistoryManager = {
  * - 收藏面板：this.renderPanel() —— 更新侧边栏收藏列表
  */
 var FavoriteManager = {
-    /** @type {Array} 收藏记录数组（内存中的实时数据） */
-    items: [],
-    /** @type {string} localStorage 存储键名 */
     storageKey: 'heze_favorites',
 
-    /**
-     * init(): 初始化收藏夹
-     * 从 localStorage 加载已有收藏数据到内存。在 loadData() 完成时调用。
-     */
     init: function() { this.load(); },
 
-    /**
-     * add(poi): 添加一个 POI 到收藏夹
-     *
-     * 【幂等性】如果该 POI 已经在收藏夹中，则直接返回不执行任何操作（防止重复收藏）。
-     *
-     * 【连锁操作】
-     * 1. 追加到 items 数组（附带时间戳）
-     * 2. 写入 localStorage 持久化
-     * 3. 记录到操作历史（供撤销使用）
-     * 4. 刷新收藏面板、排行榜、用户画像、每日推荐
-     * 5. 刷新地图标记（收藏的POI标记会显示金色边框）
-     *
-     * @param {object} poi - 包含 { id, type, name } 三个必填字段的POI对象
-     *   id: POI的唯一数字ID
-     *   type: 'food' 或 'spot'
-     *   name: POI名称（用于收藏列表显示）
-     */
     add: function(poi) {
-        // 防止重复收藏——已存在则直接返回（幂等操作）
         if (this.isFavorite(poi.id, poi.type)) return;
-        // 添加到内存数组，记录添加时间戳
-        this.items.push({ id: poi.id, type: poi.type, name: poi.name, addedAt: Date.now() });
+        favoritesList.pushBack({ id: poi.id, type: poi.type, name: poi.name, addedAt: Date.now() });
         this.save();
-        // 记录操作历史——收藏操作的 data 包含 id/type/name 供撤销还原
         HistoryManager.push('fav_add', { id: poi.id, type: poi.type, name: poi.name });
-        // 连锁刷新所有相关面板和标记
         this.renderPanel();
         RankingManager.refresh();
         ProfileManager.renderPanel();
         DailyTourManager.generate();
-        // 刷新地图标记——收藏的POI标记显示金色边框（3px #ffd700）
         if (typeof showFoodMarkers === 'function') showFoodMarkers();
         if (typeof showSpotMarkers === 'function') showSpotMarkers();
     },
 
-    /**
-     * remove(id, type): 从收藏夹中移除指定的 POI
-     *
-     * 先从 items 中查找该收藏项（为了获取 name 供历史记录使用），
-     * 然后过滤掉匹配项，保存并刷新所有关联模块。
-     *
-     * @param {number} id   - POI的唯一数字ID
-     * @param {string} type - POI类型（'food' | 'spot'）
-     */
     remove: function(id, type) {
-        // 先查找收藏项（获取 name 字段供历史记录的 data 使用）
-        var item = this.items.find(function(f) { return f.id === id && f.type === type; });
-        // 过滤掉匹配项——保留所有 (id, type) 不匹配的收藏
-        this.items = this.items.filter(function(f) { return !(f.id === id && f.type === type); });
+        var found = null;
+        favoritesList.forwardTraverse(function(item) { if (item.id === id && item.type === type) found = item; });
+        favoritesList.remove(function(f) { return f.id === id && f.type === type; });
         this.save();
-        // 如果找到了该收藏项，记录删除操作到历史
-        if (item) HistoryManager.push('fav_del', { id: id, type: type, name: item.name });
+        if (found) HistoryManager.push('fav_del', { id: id, type: type, name: found.name });
         this.renderPanel();
         RankingManager.refresh();
         ProfileManager.renderPanel();
@@ -541,63 +472,33 @@ var FavoriteManager = {
         if (typeof showSpotMarkers === 'function') showSpotMarkers();
     },
 
-    /**
-     * isFavorite(id, type): 检查指定 POI 是否已被收藏
-     * 使用 Array.some() 遍历 items 进行匹配（简洁高效）。
-     * @param {number} id   - POI的唯一数字ID
-     * @param {string} type - POI类型（'food' | 'spot'）
-     * @returns {boolean} 是否已收藏
-     */
-    isFavorite: function(id, type) { return this.items.some(function(f) { return f.id === id && f.type === type; }); },
+    isFavorite: function(id, type) { return favoritesList.contains(function(f) { return f.id === id && f.type === type; }); },
 
-    /**
-     * getAll(): 获取所有已收藏 POI 的完整数据（含原始数据字段）
-     *
-     * 【工作原理】
-     * 遍历 items（收藏记录），根据 type 在对应的数据源（foodData / spotData）中
-     * 查找完整的原始数据，使用 Object.assign() 合并收藏特有字段。
-     *
-     * 返回的每个对象包含原始数据的所有字段 + 两个额外字段：
-     *   - favType: 收藏类型（'food' 或 'spot'），方便渲染时区分显示
-     *   - addedAt: 收藏时间戳
-     *
-     * 如果某个收藏在数据源中找不到（可能数据已更新），则返回 null，后续 filter 移除。
-     *
-     * @returns {Array} 完整的 POI 数据数组（已在原始数据源中找到匹配的项）
-     */
     getAll: function() {
-        var self = this;
-        return this.items.map(function(f) {
-            // 根据类型在对应数据源中查找完整数据
-            var data = f.type === 'food' ? foodData.find(function(x) { return x.id === f.id; }) :
-                       spotData.find(function(x) { return x.id === f.id; });
-            // 合并原始数据和收藏特有字段（返回新对象，不修改原数据）
-            return data ? Object.assign({}, data, { favType: f.type, addedAt: f.addedAt }) : null;
-        }).filter(function(x) { return x !== null; }); // 过滤掉在数据源中找不到的收藏
+        var result = [];
+        favoritesList.forwardTraverse(function(item) {
+            var data = item.type === 'food' ? foodData.find(function(x) { return x.id === item.id; }) :
+                       spotData.find(function(x) { return x.id === item.id; });
+            if (data) result.push(Object.assign({}, data, { favType: item.type, addedAt: item.addedAt }));
+        });
+        return result;
     },
 
-    /**
-     * save(): 将收藏数据持久化到 localStorage
-     *
-     * 只保存 { id, type, addedAt } 三个字段到磁盘。
-     * name 不保存（可从数据源获取），减少 localStorage 空间占用。
-     * 使用 try-catch 防止异常（如隐私模式、存储空间满）。
-     */
     save: function() {
-        var d = this.items.map(function(f) { return { id: f.id, type: f.type, addedAt: f.addedAt }; });
-        try { localStorage.setItem(this.storageKey, JSON.stringify(d)); } catch(e) {}
+        var arr = [];
+        favoritesList.forwardTraverse(function(item) { arr.push({ id: item.id, type: item.type, addedAt: item.addedAt }); });
+        try { localStorage.setItem(this.storageKey, JSON.stringify(arr)); } catch(e) {}
     },
 
-    /**
-     * load(): 从 localStorage 加载收藏数据到内存
-     *
-     * 解析 JSON 字符串恢复 items 数组。
-     * 使用 try-catch 防止 localStorage 数据损坏导致解析失败——此时重置为空数组。
-     * 注意：加载时 items 中的 name 字段为空（因为 save 时不保存 name），
-     * 但后续通过 getAll() 从数据源获取时会重新补充完整数据。
-     */
     load: function() {
-        try { var r = localStorage.getItem(this.storageKey); if (r) this.items = JSON.parse(r); } catch(e) { this.items = []; }
+        try {
+            var raw = localStorage.getItem(this.storageKey);
+            if (raw) {
+                var arr = JSON.parse(raw);
+                favoritesList.clear();
+                arr.forEach(function(item) { favoritesList.pushBack(item); });
+            }
+        } catch(e) { favoritesList.clear(); }
     },
 
     /**
@@ -739,9 +640,9 @@ var RankingManager = {
      * @returns {Array} 按收藏热度排序的 foodData 副本
      */
     getFavRanking: function() {
-        // 遍历 FavoriteManager.items，统计每个美食ID被收藏的次数
+        // 遍历收藏列表统计每个美食ID被收藏的次数
         var fc = {};
-        FavoriteManager.items.forEach(function(f){ if(f.type==='food') fc[f.id]=(fc[f.id]||0)+1; });
+        favoritesList.forwardTraverse(function(f){ if(f.type==='food') fc[f.id]=(fc[f.id]||0)+1; });
         var r = foodData.slice().sort(function(a,b){
             var fa=fc[a.id]||0, fb=fc[b.id]||0;
             if(fb!==fa) return fb-fa; // 收藏次数不同——次数多在前
@@ -1684,6 +1585,43 @@ async function loadData() {
             .catch(e => console.warn('[Map] spot.json:', e))
     );
 
+    // ======== 并行加载路网数据 ========
+    loadPromises.push(
+        fetch('data/road.txt')
+            .then(r => r.ok ? r.text() : Promise.reject())
+            .then(d => {
+                console.log('[Map] 路网数据加载成功');
+                // Build adjacency graph from road data
+                // First add all vertices (foods and spots)
+                foodData.forEach(function(f) {
+                    cityGraph.addVertex({id: f.id, name: f.name, lng: f.lng, lat: f.lat, type: 'food'});
+                });
+                spotData.forEach(function(s) {
+                    cityGraph.addVertex({id: s.id, name: s.name, lng: s.lng, lat: s.lat, type: 'spot'});
+                });
+                // Parse road edges
+                var lines = d.split('\n');
+                lines.forEach(function(line) {
+                    if (!line || line[0] === '#') return;
+                    var parts = line.split('|');
+                    if (parts.length >= 4) {
+                        var from = parseInt(parts[0]);
+                        var to = parseInt(parts[1]);
+                        var dist = parseFloat(parts[2]);
+                        var time = parseFloat(parts[3]);
+                        if (!isNaN(from) && !isNaN(to) && !isNaN(dist)) {
+                            cityGraph.addEdge(from, to, dist, time || dist/400*60);
+                        }
+                    }
+                });
+                // Initialize Dijkstra and BFS
+                dijkstra = new Dijkstra(cityGraph);
+                bfsEngine = new BFS(cityGraph);
+                console.log('[Map] 路网: ' + cityGraph.vertexCount() + '顶点, ' + cityGraph.edgeCount() + '边');
+            })
+            .catch(e => console.warn('[Map] road.txt:', e))
+    );
+
     // 等待两个请求都完成（无论成功或失败）
     await Promise.all(loadPromises);
 
@@ -1848,10 +1786,11 @@ function showFoodMarkers() {
     foodMarkers.forEach(function (m) { m.setMap(null); });
     foodMarkers = [];
 
-    // 遍历每一条美食数据
+    // 使用决策树多条件筛选(手写数据结构)
+    foodDecisionTree.build(activeCategories, openOnlyActive, 0, 0);
+
     foodData.forEach(function (food, index) {
-        // 层级1：分类筛选 —— 如果筛选激活且不包含该美食的分类，则跳过
-        if (activeCategories.size > 0 && !activeCategories.has(food.category)) return;
+        if (!foodDecisionTree.root.evaluate(food)) return;
 
         // 获取该分类对应的颜色（用于标记背景）
         var color = CATEGORY_COLORS[food.category] || CATEGORY_COLORS['default'];
@@ -1916,19 +1855,9 @@ function showFoodMarkers() {
         }
     });
 
-    // ======== 层级2：美食图层全局开关 ========
+    // ======== 图层全局开关 ========
     if (!toggleFoodVisible) {
         foodMarkers.forEach(function(m) { m.setMap(null); });
-    }
-
-    // ======== 层级3：仅显示营业中 ========
-    if (openOnlyActive) {
-        foodMarkers.forEach(function(m) {
-            // 检查该标记对应美食的营业状态
-            if (m._foodData && getOpenStatus(m._foodData.opentime).cls === 'status-closed') {
-                m.setMap(null);  // 已打烊的标记从地图上移除
-            }
-        });
     }
 
     console.log('[Map] 美食标记:', foodMarkers.length, '个');
@@ -2963,6 +2892,7 @@ function executeRoutePlan() {
 
     // 初始化分段结果数组，长度 = 段数（N个点有N-1段）
     window._routeSegments = new Array(allWaypoints.length - 1);
+    window._allWaypoints = allWaypoints;
     planRouteSegments(allWaypoints, 0);
 }
 
@@ -3182,6 +3112,24 @@ function renderRouteSegmentFallback(from, to, index) {
     if (!map) return;
     if (!from || !to || isNaN(from.lng) || isNaN(from.lat) || isNaN(to.lng) || isNaN(to.lat) || from.lng === 0 || from.lat === 0 || to.lng === 0 || to.lat === 0) return;
 
+    // Try Dijkstra shortest path on the city graph first
+    if (dijkstra && cityGraph.vertexCount() > 0) {
+        var result = dijkstra.shortestPath(from.id, to.id, 'distance');
+        if (result && result.path && result.path.length > 1) {
+            var totalDist = 0;
+            for (var pi = 1; pi < result.path.length; pi++) {
+                var v1 = cityGraph.vertices[result.path[pi-1]];
+                var v2 = cityGraph.vertices[result.path[pi]];
+                if (v1 && v2) {
+                    totalDist += haversine(v1.lng, v1.lat, v2.lng, v2.lat);
+                }
+            }
+            var segment = { from: from.name, to: to.name, distance: Math.round(totalDist), duration: Math.round(totalDist/400*60), tolls: 0, steps: result.vertices.map(function(v) { return [v.lng, v.lat]; }) };
+            renderRouteSegment(segment, index);
+            return;
+        }
+    }
+
     // 使用 haversine 公式计算大圆距离
     var dist = haversine(from.lng, from.lat, to.lng, to.lat);
     if (isNaN(dist) || dist <= 0) return;
@@ -3189,7 +3137,7 @@ function renderRouteSegmentFallback(from, to, index) {
     // 估算行程时间：驾车 40km/h，步行 5km/h
     var speed = routeMode === 'walking' ? 5 : 40;
     var durationMin = Math.round(dist / (speed * 1000 / 60));
-    var segment = { from: from.name, to: to.name, distance: Math.round(dist), duration: durationMin * 60, tolls: 0, steps: [[from.lng, from.lat], [to.lng, to.lat]] };
+    var segmentFallback = { from: from.name, to: to.name, distance: Math.round(dist), duration: durationMin * 60, tolls: 0, steps: [[from.lng, from.lat], [to.lng, to.lat]] };
 
     // 灰色虚线：API 估算路线的视觉标识
     var line = new AMap.Polyline({
@@ -3201,7 +3149,7 @@ function renderRouteSegmentFallback(from, to, index) {
     currentRoutePolylines.push(line);
 
     if (!window._routeSegments) window._routeSegments = [];
-    window._routeSegments[index] = segment;
+    window._routeSegments[index] = segmentFallback;
 }
 
 /**
@@ -3260,6 +3208,22 @@ function renderRouteSummary() {
     summaryHtml += '<div class="route-summary-item">总时间: <strong>' + Math.round(totalTime / 60) + ' 分钟</strong></div>';
     if (routeMode === 'driving' && totalTolls > 0) summaryHtml += '<div class="route-summary-item">过路费: <strong>Y' + totalTolls + '</strong></div>';
     if (sm) sm.innerHTML = summaryHtml;
+
+    // BFS nearby food for the last waypoint (if it's a spot)
+    var allWaypoints = window._allWaypoints;
+    if (bfsEngine && cityGraph.vertexCount() > 0 && allWaypoints && allWaypoints.length > 0) {
+        var lastWP = allWaypoints[allWaypoints.length - 1];
+        if (lastWP && lastWP.type === 'spot') {
+            var nearby = bfsEngine.nearbyFood(lastWP.id, 5000);
+            if (nearby.length > 0) {
+                var nearbyHtml = '<div class="route-summary-item" style="margin-top:8px">附近美食 (BFS 5km): ';
+                nearby.slice(0, 5).forEach(function(f) { nearbyHtml += f.name + ' '; });
+                nearbyHtml += '</div>';
+                var smEl = document.getElementById('routeSummary');
+                if (smEl) smEl.innerHTML += nearbyHtml;
+            }
+        }
+    }
 
     // 分段详情：每段的起点→终点、距离、时间、过路费
     var segHtml = '';
@@ -3320,9 +3284,9 @@ function initHistory() {
             var item = e.target.closest('.history-item'); if (!item) return;
             var idx = parseInt(item.dataset.index);
             // 当前指针在目标之后 → undo 回退
-            while (HistoryManager.pointer > idx) HistoryManager.undo();
+            while (historyStack.current > idx) HistoryManager.undo();
             // 当前指针在目标之前 → redo 前进
-            while (HistoryManager.pointer < idx) HistoryManager.redo();
+            while (historyStack.current < idx) HistoryManager.redo();
         });
     }
 }
