@@ -120,6 +120,14 @@ var activeCategories = new Set();
  */
 var addressCache = {};
 
+// 手写数据结构实例
+var cityGraph = new AdjacencyGraph();       // 邻接表无向图(商圈路网)
+var foodDecisionTree = new DecisionTree();   // 决策树(多条件美食筛选)
+var historyStack = new SeqStack(50);         // 顺序栈(操作撤销/重做)
+var favoritesList = new DoublyLinkedList();  // 双向链表(收藏夹CRUD)
+var dijkstra = null;                         // Dijkstra算法(delay init)
+var bfsEngine = null;                        // BFS算法(delay init)
+
 /**
  * toggleFoodVisible: 美食图层全局可见性开关（boolean）
  * true = 显示所有美食标记（默认），false = 隐藏所有美食标记。
