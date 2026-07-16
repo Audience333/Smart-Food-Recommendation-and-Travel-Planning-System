@@ -121,12 +121,12 @@ var activeCategories = new Set();
 var addressCache = {};
 
 // 手写数据结构实例
-var cityGraph = new AdjacencyGraph();       // 邻接表无向图(商圈路网)
-var foodDecisionTree = new DecisionTree();   // 决策树(多条件美食筛选)
-var historyStack = new SeqStack(50);         // 顺序栈(操作撤销/重做)
-var favoritesList = new DoublyLinkedList();  // 双向链表(收藏夹CRUD)
-var dijkstra = null;                         // Dijkstra算法(delay init)
-var bfsEngine = null;                        // BFS算法(delay init)
+var cityGraph = new AdjacencyGraph();       // 邻接表无向图(商圈路网) 1597
+var foodDecisionTree = new DecisionTree();   // 决策树(多条件美食筛选) 179
+var historyStack = new SeqStack(50);         // 顺序栈(操作撤销/重做) 239
+var favoritesList = new DoublyLinkedList();  // 双向链表(收藏夹CRUD) 450
+var dijkstra = null;                         // Dijkstra算法(delay init) 1618 3117
+var bfsEngine = null;                        // BFS算法(delay init) 3217
 
 /**
  * toggleFoodVisible: 美食图层全局可见性开关（boolean）
