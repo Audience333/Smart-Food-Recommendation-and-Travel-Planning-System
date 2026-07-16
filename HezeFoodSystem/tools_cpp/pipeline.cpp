@@ -62,6 +62,13 @@
 #include <random>
 #include <iomanip>
 
+#include "ds/decision_tree.h"
+#include "ds/seq_stack.h"
+#include "ds/doubly_linked_list.h"
+#include "ds/adjacency_graph.h"
+#include "ds/dijkstra.h"
+#include "ds/bfs.h"
+
 #ifdef _WIN32
 #define popen _popen
 #define pclose _pclose
@@ -1605,76 +1612,31 @@ int cmd_photos() {
 }
 
 // ====================================================================
-// Node - 道路图中的节点结构体
+// load_nodes_to_graph — 从数据文件加载节点到邻接表图
 // ====================================================================
-// 用途：表示路网图中的一个节点（景点或美食POI），包含ID、名称和坐标。
-struct Node {
-    int id;
-    string name;
-    double lng;
-    double lat;
-};
-
-// ====================================================================
-// parse_nodes - 从数据文件中解析节点信息
-// ====================================================================
-// 目的：从 food.txt 或 spot.txt 中提取所有POI的ID、名称和坐标。
-// 参数：path - 数据文件路径
-// 返回：map<id, Node>，键为POI ID
-//
-// 算法：逐行读取，自动识别数值字段中的经纬度对（两个连续的小数），
-//       不需要预先知道经纬度字段的确切列索引。
-map<int, Node> parse_nodes(const string& path) {
-    map<int, Node> data;
+// 目的：读取 food.txt 或 spot.txt，将每个POI添加为图的顶点。
+// 参数：
+//   path   - 数据文件路径
+//   graph  - 目标邻接表图（引用传递，直接修改）
+//   type   - 顶点类型标签："food" 或 "spot"
+//   lngIdx - 经度字段的列索引
+//   latIdx - 纬度字段的列索引
+void load_nodes_to_graph(const string& path, AdjacencyGraph& graph,
+                          const char* type, int lngIdx, int latIdx) {
     ifstream f(path);
     string line;
     while (getline(f, line)) {
         if (line.empty() || line[0] == '#') continue;
         auto parts = split(line, '|');
-        if (parts.size() < 2) continue;
+        if ((int)parts.size() <= max(lngIdx, latIdx)) continue;
         try {
-            int oid = stoi(parts[0]);
+            int id = stoi(parts[0]);
             string name = parts[1];
-            double lng = 0, lat = 0;
-            bool found = false;
-
-            // 自动检测经纬度字段：找两个连续的数值字段
-            for (size_t i = 2; i < parts.size(); i++) {
-                if (!found) {
-                    // 检查是否为合法数字（允许小数点和前导负号）
-                    bool is_num = true;
-                    int dot_count = 0;
-                    string& p = parts[i];
-                    for (size_t j = 0; j < p.size(); j++) {
-                        if (p[j] == '.') dot_count++;
-                        else if (p[j] == '-' && j == 0) continue;
-                        else if (!isdigit(p[j])) { is_num = false; break; }
-                    }
-                    if (is_num && dot_count <= 1 && !p.empty() && p != "-") {
-                        lng = stod(p);
-                        // 检查下一个字段是否也是合法数字（纬度）
-                        if (i + 1 < parts.size()) {
-                            string& p2 = parts[i + 1];
-                            bool is_num2 = true;
-                            int dot2 = 0;
-                            for (size_t j = 0; j < p2.size(); j++) {
-                                if (p2[j] == '.') dot2++;
-                                else if (p2[j] == '-' && j == 0) continue;
-                                else if (!isdigit(p2[j])) { is_num2 = false; break; }
-                            }
-                            if (is_num2 && dot2 <= 1 && !p2.empty() && p2 != "-") {
-                                lat = stod(p2);
-                                found = true;
-                            }
-                        }
-                        break;
-                    }
-                }
-            }
-            if (found) data[oid] = {oid, name, lng, lat};
+            double lng = stod(parts[lngIdx]);
+            double lat = stod(parts[latIdx]);
+            graph.addVertex(id, name.c_str(), lng, lat, type);
         } catch (...) {}
     }
-    return data;
 }
 
 // ====================================================================
@@ -1748,7 +1710,10 @@ pair<int,int> amap_driving(const string& key, double olng, double olat, double d
 // ====================================================================
 // cmd_roads - 重新计算道路连接命令（替代 recalc_roads.py）
 // ====================================================================
+// 【v2.0 更新】集成手写数据结构：AdjacencyGraph、Dijkstra、BFS
+//
 // 目的：基于POI坐标计算所有节点间的道路连接（距离和时间），生成路网数据。
+//       同时展示 Dijkstra 最短路径算法和 BFS 周边搜索算法的实际应用。
 //
 // 输入文件：
 //   data/food.txt    - 美食数据（含坐标）
@@ -1758,97 +1723,76 @@ pair<int,int> amap_driving(const string& key, double olng, double olat, double d
 // 输出文件：
 //   data/road.txt    - 覆盖生成的路网连接数据
 //
-// 算法流程（分层构建道路网络）：
+// 【算法流程（分层构建道路网络 + 数据结构集成）】
 //
-// 第一层：预设的热门景点间连接
-//   使用预定义的景点对（spot_connections列表，共17对）建立连接。
-//   优先使用高德驾车API获取真实距离/时间；API不可用时使用Haversine直线距离。
+// 第1步：将所有POI加载到 AdjacencyGraph（替换旧 map<int,Node>）
+//   美食: food.txt → AdjacencyGraph (type="food")
+//   景点: spot.txt → AdjacencyGraph (type="spot")
 //
-// 第二层：各区县美食聚集点与枢纽的连接
-//   county_hub_ranges定义了8个县的枢纽景点ID与美食ID范围的映射。
-//   对每个县，计算枢纽点与所有美食的Haversine距离，取最近的3个建立连接。
+// 第2~7层：构建基础路网（边同时写入边向量和图结构）
+//   边向量用于最终 road.txt 输出
+//   图结构用于 Dijkstra 最短路径查找和 BFS 周边搜索
 //
-// 第三层：牡丹区景点与美食的邻近连接
-//   牡丹区景点(13个)与牡丹区美食范围建立连接。
-//   搜索半径5000米内，取最近的5个建立连接。
+// 第一层（后执行）：使用 Dijkstra 算法查找景点间最短路径
+//   先在已构建的基础路网上运行 Dijkstra，若找到路径则使用该路径距离
+//   若图尚未形成连接（路径不存在），则降级使用 Haversine 直线距离
+//   展示了 Dijkstra 在实际路网中的路由能力
 //
-// 第四层：牡丹区美食集群内部连接
-//   将牡丹区美食分为4个集群，集群内距离<3000米的美食互相连接。
-//   另有ID 164-188范围内的美食，距离<5000米的互相连接。
-//
-// 第五层：跨区枢纽连接
-//   9个区县枢纽节点（1,121,129,136,142,148,153,157,161）之间全连接。
-//   距离使用Haversine×1.3系数（模拟非直线道路）。
-//
-// 第六层：各景点与总枢纽(1)的连接
-//   所有景点(ID 21-110)与枢纽1之间建立连接（Haversine×1.3系数）。
-//
-// 第七层：各区县内部节点连接
-//   8个县的景点之间和美食之间，距离阈值内互相连接。
-//
-// 去重与排序：
-//   对所有边按(min(a,b), max(a,b))去重，保留最短距离。
-//   输出分5个section：牡丹区景点间、景点↔美食、牡丹区美食间、跨区、各县内部。
+// BFS额外功能：查找各主要景点周边的美食集群
+//   使用手写队列BFS在5km范围内搜索，输出周边美食数量和前5个
 //
 // 距离计算策略：
 //   - 有高德API Key时，支持点对点驾车距离（仅预设连接使用，避免大量API调用）
-//   - 无API Key或API调用失败时，使用Haversine直线距离
+//   - 无API Key或API调用失败时，优先使用 Dijkstra 在图中的路径距离
+//   - Dijkstra 不可用时，降级使用 Haversine 直线距离
 //   - 跨区道路乘以1.3系数模拟实际道路的绕行
 //   - 时间由距离÷40km/h估算
 int cmd_roads() {
     printf("============================================================\n");
-    printf("  Recalculate Road Connections\n");
+    printf("  Recalculate Road Connections (DS-Integrated v2.0)\n");
     printf("============================================================\n");
 
     auto config = load_config();
     string amap_key = config.count("AMAP_KEY") ? config["AMAP_KEY"] : "";
     if (!amap_key.empty()) printf("Using Amap driving API\n");
-    else printf("Using Haversine distance only\n");
+    else printf("Using Haversine/Dijkstra distance\n");
 
-    // 解析所有节点（景点和美食）
-    auto spots = parse_nodes(SPOT_TXT);
-    auto foods = parse_nodes(FOOD_TXT);
-
-    printf("Loaded spots: %zu\n", spots.size());
-    printf("Loaded foods: %zu\n", foods.size());
-
-    // 合并所有节点
-    map<int, Node> all_nodes = spots;
-    for (auto& p : foods) all_nodes[p.first] = p.second;
+    // ====================================================================
+    // 第1步：创建邻接表图，加载所有POI节点
+    // ====================================================================
+    // 使用手写 AdjacencyGraph 替代旧的 map<int,Node> all_nodes
+    AdjacencyGraph graph;
+    load_nodes_to_graph(FOOD_TXT, graph, "food", 2, 3);
+    load_nodes_to_graph(SPOT_TXT, graph, "spot", 4, 5);
+    printf("Graph vertices: %d (spots+foods)\n", graph.vertexCount_());
 
     // 边的向量：(起点ID, 终点ID, 距离米, 时间分钟)
     vector<tuple<int,int,int,int>> edges;
 
-    // ===== 第一层：牡丹区热门景点间的预设连接 =====
+    // 辅助函数：检查图中是否存在某顶点（简洁写法）
+    auto hasNode = [&](int id) { return graph.hasVertex(id); };
+
+    // 辅助函数：获取图中顶点的坐标
+    auto getNodeCoord = [&](int id, double& lng, double& lat) -> bool {
+        const Vertex* v = graph.getVertexById(id);
+        if (v == nullptr) return false;
+        lng = v->lng; lat = v->lat;
+        return true;
+    };
+
+    // ====================================================================
+    // 第2~7层：构建基础路网（边同时存入 edges向量 和 graph）
+    // ====================================================================
+
+    // 预设的曲艺区景点列表
     vector<int> mudan_spots = {1,2,8,9,10,11,12,13,14,15,16,20,18};
+    // 预设的景点间连接对（第一层用Dijkstra处理，此处先定义）
     vector<pair<int,int>> spot_connections = {
         {1,2},{1,13},{1,14},{2,13},{8,9},{8,12},{8,16},{9,10},{9,11},{9,16},
         {10,15},{11,20},{11,12},{12,16},{19,15},{3,17},{5,19}
     };
 
-    for (auto& sc : spot_connections) {
-        int a = sc.first, b = sc.second;
-        if (!all_nodes.count(a) || !all_nodes.count(b)) continue;
-        auto& na = all_nodes[a], &nb = all_nodes[b];
-        // 优先使用高德驾车API获取实际距离
-        if (!amap_key.empty()) {
-            auto [dist, dur] = amap_driving(amap_key, na.lng, na.lat, nb.lng, nb.lat);
-            if (dist > 0) {
-                edges.push_back({a, b, dist, dur});
-                edges.push_back({b, a, dist, dur});
-                this_thread::sleep_for(chrono::milliseconds(500));
-                continue;
-            }
-        }
-        // 降级到Haversine直线距离
-        double dist = haversine(na.lng, na.lat, nb.lng, nb.lat);
-        int t = time_from_distance(dist);
-        edges.push_back({a, b, (int)dist, t});
-        edges.push_back({b, a, (int)dist, t});
-    }
-
     // ===== 第二层：各区县美食与枢纽连接 =====
-    // 每个县有一个枢纽景点(key)和一组美食ID范围(value)
     map<int, vector<int>> county_hub_ranges = {
         {121, {122,123,124,125,126,127,128,189,190,191,192,193,194,195,196,197,198,199,200,201,202,203,204,205,206,207,208,209,210,211,212,213}},
         {129, {130,131,132,133,134,135,214,215,216,217,218,219,220,221,222,223,224,225,226,227,228,229,230,231,232,233,234,235,236,237,238}},
@@ -1862,14 +1806,16 @@ int cmd_roads() {
 
     for (auto& ch : county_hub_ranges) {
         int hub_id = ch.first;
-        if (!all_nodes.count(hub_id)) continue;
-        double hlng = all_nodes[hub_id].lng, hlat = all_nodes[hub_id].lat;
+        if (!hasNode(hub_id)) continue;
+        double hlng, hlat;
+        if (!getNodeCoord(hub_id, hlng, hlat)) continue;
 
-        // 计算枢纽到所有美食的距离，取最近的3个
         vector<pair<int,double>> candidates;
         for (int fid : ch.second) {
-            if (!all_nodes.count(fid)) continue;
-            double dist = haversine(hlng, hlat, all_nodes[fid].lng, all_nodes[fid].lat);
+            if (!hasNode(fid)) continue;
+            double flng, flat;
+            if (!getNodeCoord(fid, flng, flat)) continue;
+            double dist = haversine(hlng, hlat, flng, flat);
             candidates.push_back({fid, dist});
         }
         sort(candidates.begin(), candidates.end(), [](auto& a, auto& b) { return a.second < b.second; });
@@ -1880,38 +1826,41 @@ int cmd_roads() {
             int t = time_from_distance(dist);
             edges.push_back({hub_id, c.first, (int)dist, t});
             edges.push_back({c.first, hub_id, (int)dist, t});
+            graph.addEdge(hub_id, c.first, dist, (double)t);  // 加入图（含双向）
             taken++;
         }
     }
 
     // ===== 第三层：牡丹区景点与美食的邻近连接 =====
-    // 牡丹区美食ID范围：101-120 和 164-188
     vector<int> mudan_food_ids;
     for (int i = 101; i <= 120; i++) mudan_food_ids.push_back(i);
     for (int i = 164; i <= 188; i++) mudan_food_ids.push_back(i);
 
     for (int sid : mudan_spots) {
-        if (!all_nodes.count(sid)) continue;
-        double slng = all_nodes[sid].lng, slat = all_nodes[sid].lat;
+        if (!hasNode(sid)) continue;
+        double slng, slat;
+        if (!getNodeCoord(sid, slng, slat)) continue;
         vector<pair<int,double>> nearby;
         for (int fid : mudan_food_ids) {
-            if (!all_nodes.count(fid)) continue;
-            double dist = haversine(slng, slat, all_nodes[fid].lng, all_nodes[fid].lat);
-            if (dist < 5000) nearby.push_back({fid, dist});  // 5000米半径
+            if (!hasNode(fid)) continue;
+            double flng, flat;
+            if (!getNodeCoord(fid, flng, flat)) continue;
+            double dist = haversine(slng, slat, flng, flat);
+            if (dist < 5000) nearby.push_back({fid, dist});
         }
         sort(nearby.begin(), nearby.end(), [](auto& a, auto& b) { return a.second < b.second; });
         int taken = 0;
         for (auto& n : nearby) {
-            if (taken >= 5) break;  // 每个景点最多连接5个最近美食
+            if (taken >= 5) break;
             int t = time_from_distance(n.second);
             edges.push_back({sid, n.first, (int)n.second, t});
             edges.push_back({n.first, sid, (int)n.second, t});
+            graph.addEdge(sid, n.first, n.second, (double)t);  // 加入图
             taken++;
         }
     }
 
     // ===== 第四层：牡丹区美食集群内部连接 =====
-    // 将牡丹区美食分为4个集群，集群内距离<3000米的互相连接
     vector<vector<int>> food_clusters = {
         {101,102,108,111,112,120},
         {103,105,106,109,110,116,117,118},
@@ -1922,106 +1871,211 @@ int cmd_roads() {
         for (size_t i = 0; i < cluster.size(); i++) {
             for (size_t j = i+1; j < cluster.size(); j++) {
                 int a = cluster[i], b = cluster[j];
-                if (all_nodes.count(a) && all_nodes.count(b)) {
-                    double dist = haversine(all_nodes[a].lng, all_nodes[a].lat,
-                                           all_nodes[b].lng, all_nodes[b].lat);
-                    if (dist < 3000) {
-                        int t = time_from_distance(dist);
-                        edges.push_back({a, b, (int)dist, t});
-                        edges.push_back({b, a, (int)dist, t});
+                if (hasNode(a) && hasNode(b)) {
+                    double alng, alat, blng, blat;
+                    if (getNodeCoord(a, alng, alat) && getNodeCoord(b, blng, blat)) {
+                        double dist = haversine(alng, alat, blng, blat);
+                        if (dist < 3000) {
+                            int t = time_from_distance(dist);
+                            edges.push_back({a, b, (int)dist, t});
+                            edges.push_back({b, a, (int)dist, t});
+                            graph.addEdge(a, b, dist, (double)t);  // 加入图
+                        }
                     }
                 }
             }
         }
     }
 
-    // 扩展美食范围 164-188 之间的连接（距离<5000米）
+    // 扩展美食范围 164-188 之间的连接
     for (int a = 164; a <= 188; a++) {
         for (int b = a + 1; b <= 188; b++) {
-            if (all_nodes.count(a) && all_nodes.count(b)) {
-                double dist = haversine(all_nodes[a].lng, all_nodes[a].lat,
-                                       all_nodes[b].lng, all_nodes[b].lat);
-                if (dist < 5000) {
-                    int t = time_from_distance(dist);
-                    edges.push_back({a, b, (int)dist, t});
-                    edges.push_back({b, a, (int)dist, t});
+            if (hasNode(a) && hasNode(b)) {
+                double alng, alat, blng, blat;
+                if (getNodeCoord(a, alng, alat) && getNodeCoord(b, blng, blat)) {
+                    double dist = haversine(alng, alat, blng, blat);
+                    if (dist < 5000) {
+                        int t = time_from_distance(dist);
+                        edges.push_back({a, b, (int)dist, t});
+                        edges.push_back({b, a, (int)dist, t});
+                        graph.addEdge(a, b, dist, (double)t);  // 加入图
+                    }
                 }
             }
         }
     }
 
     // ===== 第五层：跨区枢纽全连接 =====
-    // 9个区县枢纽节点之间全连接（Haversine×1.3系数）
     vector<int> hub_ids = {1,121,129,136,142,148,153,157,161};
     for (size_t i = 0; i < hub_ids.size(); i++) {
         for (size_t j = i+1; j < hub_ids.size(); j++) {
             int a = hub_ids[i], b = hub_ids[j];
-            if (all_nodes.count(a) && all_nodes.count(b)) {
-                double dist = haversine(all_nodes[a].lng, all_nodes[a].lat,
-                                       all_nodes[b].lng, all_nodes[b].lat);
-                int road_dist = (int)(dist * 1.3);  // 跨区道路系数1.3
-                int t = max(1, (int)round(road_dist / (60.0 * 1000 / 60)));
-                edges.push_back({a, b, road_dist, t});
-                edges.push_back({b, a, road_dist, t});
+            if (hasNode(a) && hasNode(b)) {
+                double alng, alat, blng, blat;
+                if (getNodeCoord(a, alng, alat) && getNodeCoord(b, blng, blat)) {
+                    double dist = haversine(alng, alat, blng, blat);
+                    int road_dist = (int)(dist * 1.3);
+                    int t = max(1, (int)round(road_dist / (60.0 * 1000 / 60)));
+                    edges.push_back({a, b, road_dist, t});
+                    edges.push_back({b, a, road_dist, t});
+                    graph.addEdge(a, b, (double)road_dist, (double)t);  // 加入图
+                }
             }
         }
     }
 
     // ===== 第六层：各景点与总枢纽(1)连接 =====
-    // 所有景点(ID 21-110)到总枢纽1的星形连接
     for (int sid = 21; sid <= 110; sid++) {
-        if (all_nodes.count(sid) && all_nodes.count(1) && sid != 1) {
-            double dist = haversine(all_nodes[1].lng, all_nodes[1].lat,
-                                   all_nodes[sid].lng, all_nodes[sid].lat);
-            int road_dist = (int)(dist * 1.3);  // 跨区系数
-            int t = max(1, (int)round(road_dist / (60.0 * 1000 / 60)));
-            edges.push_back({1, sid, road_dist, t});
-            edges.push_back({sid, 1, road_dist, t});
+        if (hasNode(sid) && hasNode(1) && sid != 1) {
+            double slng, slat, l1ng, l1at;
+            if (getNodeCoord(1, l1ng, l1at) && getNodeCoord(sid, slng, slat)) {
+                double dist = haversine(l1ng, l1at, slng, slat);
+                int road_dist = (int)(dist * 1.3);
+                int t = max(1, (int)round(road_dist / (60.0 * 1000 / 60)));
+                edges.push_back({1, sid, road_dist, t});
+                edges.push_back({sid, 1, road_dist, t});
+                graph.addEdge(1, sid, (double)road_dist, (double)t);  // 加入图
+            }
         }
     }
 
     // ===== 第七层：各区县内部节点间连接 =====
-    // 8个县的景点范围（距离<5000米内互相连接）
     vector<pair<int,int>> county_ranges = {
         {121,128},{129,135},{136,141},{142,147},{148,152},{153,156},{157,160},{161,163}
     };
     for (auto& cr : county_ranges) {
         for (int a = cr.first; a <= cr.second; a++) {
             for (int b = a + 1; b <= cr.second; b++) {
-                if (all_nodes.count(a) && all_nodes.count(b)) {
-                    double dist = haversine(all_nodes[a].lng, all_nodes[a].lat,
-                                           all_nodes[b].lng, all_nodes[b].lat);
-                    if (dist < 5000) {
-                        int t = time_from_distance(dist);
-                        edges.push_back({a, b, (int)dist, t});
-                        edges.push_back({b, a, (int)dist, t});
+                if (hasNode(a) && hasNode(b)) {
+                    double alng, alat, blng, blat;
+                    if (getNodeCoord(a, alng, alat) && getNodeCoord(b, blng, blat)) {
+                        double dist = haversine(alng, alat, blng, blat);
+                        if (dist < 5000) {
+                            int t = time_from_distance(dist);
+                            edges.push_back({a, b, (int)dist, t});
+                            edges.push_back({b, a, (int)dist, t});
+                            graph.addEdge(a, b, dist, (double)t);  // 加入图
+                        }
                     }
                 }
             }
         }
     }
 
-    // 8个县的新增美食范围（距离<10000米内互相连接，更大的阈值）
     vector<pair<int,int>> new_county_ranges = {
         {189,213},{214,238},{239,263},{264,288},{289,313},{314,338},{339,363},{364,388}
     };
     for (auto& cr : new_county_ranges) {
         for (int a = cr.first; a <= cr.second; a++) {
             for (int b = a + 1; b <= cr.second; b++) {
-                if (all_nodes.count(a) && all_nodes.count(b)) {
-                    double dist = haversine(all_nodes[a].lng, all_nodes[a].lat,
-                                           all_nodes[b].lng, all_nodes[b].lat);
-                    if (dist < 10000) {
-                        int t = time_from_distance(dist);
-                        edges.push_back({a, b, (int)dist, t});
-                        edges.push_back({b, a, (int)dist, t});
+                if (hasNode(a) && hasNode(b)) {
+                    double alng, alat, blng, blat;
+                    if (getNodeCoord(a, alng, alat) && getNodeCoord(b, blng, blat)) {
+                        double dist = haversine(alng, alat, blng, blat);
+                        if (dist < 10000) {
+                            int t = time_from_distance(dist);
+                            edges.push_back({a, b, (int)dist, t});
+                            edges.push_back({b, a, (int)dist, t});
+                            graph.addEdge(a, b, dist, (double)t);  // 加入图
+                        }
                     }
                 }
             }
         }
     }
 
-    // ===== 去重：对相同节点对的边保留最短距离 =====
+    // ====================================================================
+    // 第一层：使用 Dijkstra 查找景点间最短路径
+    // ====================================================================
+    // 此时基础路网（第2~7层）已建立，Dijkstra 可以在图中找到最短路径
+    // 展示手写 Dijkstra 算法在实际路网中的路由能力
+    printf("\n=== Dijkstra: Spot-to-Spot Shortest Paths ===\n");
+    Dijkstra dijkstra(graph);
+
+    for (auto& sc : spot_connections) {
+        int a = sc.first, b = sc.second;
+        if (!hasNode(a) || !hasNode(b)) continue;
+
+        // 优先使用高德驾车API
+        bool api_used = false;
+        if (!amap_key.empty()) {
+            double alng, alat, blng, blat;
+            if (getNodeCoord(a, alng, alat) && getNodeCoord(b, blng, blat)) {
+                auto [dist, dur] = amap_driving(amap_key, alng, alat, blng, blat);
+                if (dist > 0) {
+                    edges.push_back({a, b, dist, dur});
+                    edges.push_back({b, a, dist, dur});
+                    graph.addEdge(a, b, (double)dist, (double)dur);
+                    api_used = true;
+                    this_thread::sleep_for(chrono::milliseconds(500));
+                }
+            }
+        }
+
+        if (!api_used) {
+            // 使用 Dijkstra 在已有路网中查找最短路径
+            auto result = dijkstra.shortestPath(a, b, "distance");
+
+            if (result.distance < 1e15 && !result.path.empty() && result.path.size() >= 2) {
+                // Dijkstra 找到了路径：使用图中计算的最短距离
+                int t = time_from_distance(result.distance);
+                edges.push_back({a, b, (int)result.distance, t});
+                edges.push_back({b, a, (int)result.distance, t});
+                graph.addEdge(a, b, result.distance, (double)t);
+
+                // 打印 Dijkstra 找到的路径（展示路径还原能力）
+                printf("  Dijkstra %d->%d: %.0fm via %zu nodes",
+                       a, b, result.distance, result.path.size());
+                if (result.path.size() <= 6) {
+                    printf(" [");
+                    for (size_t pi = 0; pi < result.path.size(); pi++) {
+                        if (pi > 0) printf("→");
+                        printf("%d", result.path[pi]);
+                    }
+                    printf("]");
+                }
+                printf("\n");
+            } else {
+                // 图中无路径：降级使用 Haversine 直线距离
+                double alng, alat, blng, blat;
+                if (getNodeCoord(a, alng, alat) && getNodeCoord(b, blng, blat)) {
+                    double dist = haversine(alng, alat, blng, blat);
+                    int t = time_from_distance(dist);
+                    edges.push_back({a, b, (int)dist, t});
+                    edges.push_back({b, a, (int)dist, t});
+                    graph.addEdge(a, b, dist, (double)t);
+                    printf("  Haversine %d->%d: %.0fm (no graph path)\n", a, b, dist);
+                }
+            }
+        }
+    }
+
+    // ====================================================================
+    // BFS 额外功能：查找各主要景点周边的美食集群
+    // ====================================================================
+    // 使用手写队列 BFS，在5公里范围内搜索美食POI
+    printf("\n=== BFS: Nearby Food Clusters (5km radius) ===\n");
+    BFS bfs(graph);
+    vector<int> keySpots = {1, 2, 8, 9, 10, 12, 14, 16, 20};
+    for (int spotId : keySpots) {
+        if (!hasNode(spotId)) continue;
+        auto nearby = bfs.nearbyFood(spotId, 5000.0);
+        const Vertex* sv = graph.getVertexById(spotId);
+        if (sv == nullptr) continue;
+        printf("  %s (ID=%d): %zu foods within 5km\n",
+               sv->name, spotId, nearby.size());
+        // 显示前5个最近的美食（距离升序）
+        int showCount = 0;
+        for (auto& item : nearby) {
+            if (showCount >= 5) break;
+            printf("    - %s (%.0fm)\n", item.name.c_str(), item.distance);
+            showCount++;
+        }
+    }
+
+    // ====================================================================
+    // 去重：对相同节点对的边保留最短距离
+    // ====================================================================
     map<pair<int,int>,pair<int,int>> edge_map;
     for (auto& e : edges) {
         int a = get<0>(e), b = get<1>(e), dist = get<2>(e), t = get<3>(e);
@@ -2031,20 +2085,21 @@ int cmd_roads() {
         }
     }
 
-    // ===== 写入 road.txt =====
+    // ====================================================================
+    // 写入 road.txt
+    // ====================================================================
     ofstream f(ROAD_TXT);
     f << "# 菏泽城市道路连接数据（基于高德地图真实坐标计算）\n";
     f << "# 格式: 起点ID|终点ID|距离(米)|预计时间(分钟)\n";
     f << "# 节点类型: 1-110=景点, 101-388=美食\n";
-    f << "# 距离使用Haversine公式计算，跨区道路×1.3系数\n";
+    f << "# 距离计算：Dijkstra最短路径 | Haversine公式 | 跨区道路×1.3系数\n";
+    f << "# 数据结构：AdjacencyGraph + Dijkstra + BFS (手写C++实现)\n";
     time_t now = time(nullptr);
     char buf[32];
     strftime(buf, sizeof(buf), "%Y-%m-%d", localtime(&now));
     f << "# 更新日期: " << buf << "\n";
     f << "#\n";
 
-    // 分组过滤器：按连接类型分5个section导出
-    // group 0: 景点间   1: 景点↔美食   2: 牡丹区美食间   3: 跨区   4: 各县内部
     auto filter_fn = [](int a, int b, int d, int t, int group) {
         switch (group) {
             case 0: return a <= 110 && b <= 110;
@@ -2078,6 +2133,7 @@ int cmd_roads() {
     }
 
     printf("\nGenerated %zu road connections\n", edge_map.size());
+    printf("Graph: %d vertices, %d edges\n", graph.vertexCount_(), graph.edgeCount());
     printf("Written to %s\n", ROAD_TXT);
     return 0;
 }
