@@ -62,12 +62,12 @@
 #include <random>
 #include <iomanip>
 
-#include "ds/decision_tree.h"
-#include "ds/seq_stack.h"
-#include "ds/doubly_linked_list.h"
-#include "ds/adjacency_graph.h"
-#include "ds/dijkstra.h"
-#include "ds/bfs.h"
+#include "include/decision_tree.h"
+#include "include/seq_stack.h"
+#include "include/doubly_linked_list.h"
+#include "include/adjacency_graph.h"
+#include "include/dijkstra.h"
+#include "include/bfs.h"
 
 #ifdef _WIN32
 #define popen _popen
@@ -2446,48 +2446,4 @@ int cmd_json() {
 
     printf("\nDone!\n");
     return 0;
-}
-
-// ====================================================================
-// main - 命令行入口，负责子命令分发
-// ====================================================================
-// 用法：pipeline <command>
-// 支持的命令：
-//   expand  - 通过高德API扩充POI数据
-//   fill    - 逆地理编码填充缺失地址
-//   photos  - 获取POI照片URL
-//   roads   - 重新计算道路连接
-//   json    - 生成Web前端JSON文件
-//   all     - 按顺序执行以上全部命令（一整条流水线）
-//
-// 返回值：0=成功，1=失败（参数错误或某个步骤失败）
-int main(int argc, char* argv[]) {
-    if (argc < 2) {
-        printf("Usage: pipeline <command>\n");
-        printf("Commands: expand, fill, photos, roads, json, all\n");
-        return 1;
-    }
-
-    string cmd = argv[1];
-
-    if (cmd == "expand") { return cmd_expand(); }
-    else if (cmd == "fill") { return cmd_fill(); }
-    else if (cmd == "photos") { return cmd_photos(); }
-    else if (cmd == "roads") { return cmd_roads(); }
-    else if (cmd == "json") { return cmd_json(); }
-    else if (cmd == "all") {
-        // 全流水线：按依赖顺序执行所有步骤
-        printf("Running full pipeline...\n");
-        if (cmd_expand() != 0) return 1;
-        if (cmd_fill() != 0) return 1;
-        if (cmd_photos() != 0) return 1;
-        if (cmd_roads() != 0) return 1;
-        if (cmd_json() != 0) return 1;
-        printf("\nAll steps completed!\n");
-        return 0;
-    }
-    else {
-        printf("Unknown command: %s\n", cmd.c_str());
-        return 1;
-    }
 }
